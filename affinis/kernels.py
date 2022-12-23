@@ -36,7 +36,7 @@ def df_dt(f, t, L, k):
     return k*np.matmul(-L,f[...,None]).squeeze(-1)
 #     return -k*L.dot(f)
 #
-def diffusion(a, t):
+# def diffusion(a, t):
     
     
 def cumulative_diffusion(a, t):
