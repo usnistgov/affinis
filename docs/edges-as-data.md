@@ -211,10 +211,111 @@ papers.melt(ignore_index=False).replace(0,np.nan).dropna()
 ```
 
 ```{code-cell} ipython3
+# Scatter Matrix
+sns.heatmap(papers.T@papers)
+plt.title('co-occurrence counts')
+```
+
+```{code-cell} ipython3
+# Now the Covariance
 sns.heatmap(papers.cov())
+plt.title('covariance')
 ```
 
 Ok, what's going on...??
+
+Recall that, before, we counted edges as observations. 
+Edges were indeed in the node-feature-space $\mathbb{R}^n$, but they only ever had a source and a target (marginal sum was 2). 
+Now we are allowing much bigger "edges". 
+
+In fact, this observational data is still an incidence structure, but it is a _hypergraph_. 
+Hypergraphs have 1-to-1 corresponcence with _bipartite graphs_, and the _biadjacency_ matrix is the matrix we just saw.
+By taking the _inner product_ of all pairs of edges in this bipartite graph, we have now performed what's called a _linear bipartite projection_ of the hypergraph into a graph on only authors. 
+
+Linear projections make the (rather presumptuous) assertion that all hyperedges/sets are equivalent to linear combinations of their subsets --- specifically, a union of all pairwise relations. 
+
+```{code-cell} ipython3
+obs_incidence = (
+    papers.melt(ignore_index=False, var_name='author')
+    .reset_index()
+    .astype({'author':author_idx.dtype, 'value':'Sparse[int]'})
+    .set_index(['week','author'])
+)['value']
+
+obs_incidence
+```
+
+```{code-cell} ipython3
+sns.heatmap(obs_incidence.unstack().T@obs_incidence.unstack())
+plt.title('co-occurrence counts')
+```
+
+```{code-cell} ipython3
+sns.heatmap(obs_incidence.unstack().cov())
+plt.title('covariance')
+```
+
+Co-Occurrence Covariance and our "unrolled" edges' grammian: the two are _the same_
+
+```{code-cell} ipython3
+(papers.cov()-obs_incidence.unstack().cov()).max() # to machine precision
+```
+
+### An Aside: Modeling Complex Systems --- Torres et al (2021)
+
+A more precise description of what's going on here is that our observations _are_ hyperedges. 
+However, to simply calculate an empirical covariance (which is a centered/scaled version of the co-occurrence Laplacian), whe are implicitly forming a downward-closure of our hyperedges, turning them into **$k$-simplices**. 
+
++++
+
+Now recall that a hyperedge (publication, in our data) with $k$ authors being turned into a $k$-simplex makes it identical to another simplex on the same authors. 
+Think of this as "forgetting" that documents are independent observations of relationships in the hyperedge. 
+The inner product will treat any co-occurrence in any document as equivalent to another co-occurrence anywhere else. 
+
+> We have implicitly removed conditional independence from our model
+
++++
+
+Then, to get to a graph again, we assume that each inner-product can stand in for its own, pairwise relationship... its own edge weight. 
+So, it's impossible to tell if a given projected edge came about because of participation in one _huge_ paper, a bunch of smaller papers, or maybe a mixture. 
+This is implied by the inner product itself, due to associativity of addition/multiplication. 
+
+> We have implicitly removed higher-order interractions from our model 
+
++++
+
+### I'm Lost in the weeds
+
+One way of building intuition on this is to ask yourself: Is it more likely, given a paper's list of authors ...?
+> for all authors to have been equally friends with every other author, a priori
+
+or
+
+> for authors to have been asked by a single friend, with the ability to ask one other friend. 
+
+Both are probably a _stretch_, with respect to how papers are really going to get written (there's probably a lot more drama!). 
+But it should be clear that, as we move away from the $n=2$ case (where the two options are equivalent), to higher numbers of co-authors, the situation where you know everyone else equally _under our conditional probability definition of friendship_ becomes far more unlikely that not. 
+
+
++++
+
+### Sounds good, but _why_?
+Why is it less likely? 
+After all, isn't a model where every pair is assigned equal probability an... uninformative prior, of sorts? There's fewer decisions I, as an analyst must make (read: fewer parameters), so shouldn't the complexity be lower, somehow? 
+
+It depends on your prior, much like our deference to sparse models (even if they need tuning). 
+If we believe a priori that, say, any two authors in the set are some probability $p<1$ to be friends, then the chance of observing the mutual friendship of $k$ authors is distributed as a binomial distribution on ${k \choose 2}$ trials (one for each edge).  
+
+Even if every author has equal odds of knowing any other author (which should ring massive alarms, given our block-graph model of the world), then the prior likelihood of a clique should be
+
+
+```{code-cell} ipython3
+from scipy.stats import binom
+plt.stem(x:=np.arange(2,11), binom.pmf(1., x,0.5))#.pmf(np.arange(10))
+plt.gca().set(xlabel='# authors', ylabel='clique prior probability ($p=0.5$)')
+```
+
+In reality $p$ should be a lot lower, and _certainly_ infuenced by our domain knowledge. 
 
 +++
 
