@@ -21,7 +21,7 @@ kernelspec:
 ```{code-cell} ipython3
 import networkx as nx
 import pandas as pd
-from scipy import sparse, linalg
+from scipy import sparse, linalg, stats
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -98,11 +98,7 @@ This is different from the adjacency representation, where the sparse representa
 ```{code-cell} ipython3
 edgelist = (
     nx.to_pandas_edgelist(author_rel)
- # .astype(dict(source=author_idx, target=author_idx))
-    .assign(
-        source=lambda df: pd.Categorical.from_codes(df.source, dtype=author_idx.dtype),
-        target=lambda df: pd.Categorical.from_codes(df.target, dtype=author_idx.dtype)
-    )
+    .astype(dict(source=author_idx.dtype, target=author_idx.dtype))
 )
 edgelist.head()
 ```
@@ -323,7 +319,19 @@ In reality $p$ should be a lot lower, and _certainly_ infuenced by our domain kn
 Stop here...
 
 ```{code-cell} ipython3
-eps=0.01*np.eye(n_authors)
+Ds_inv=np.diag(1./np.diag(Ls))
+Σ = stats.Covariance.from_precision(cal_L:=linalg.sqrtm(Ds_inv)@Ls@linalg.sqrtm(Ds_inv))
+sns.heatmap(cal_L)
+```
+
+```{code-cell} ipython3
+sns.heatmap(Σ.covariance)
+```
+
+```{code-cell} ipython3
+stats.multivariate_normal(cov=Σ, seed=rng).rvs(400)
+
+# eps=0.01*np.eye(n_authors)
 
 # sns.heatmap(sparse.linalg.inv(sparse.csc_array(L+eps)).todense())
 ```
