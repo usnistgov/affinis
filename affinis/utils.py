@@ -22,7 +22,7 @@ def _sq(A):
 def minmax(x, axis=None): 
     return (x-x.min(axis=axis))/(x.max(axis=axis)-x.min(axis=axis))
 
-def norm_diag(A):
+def _norm_diag(A):
     a_ii = np.diag(A)
     
     return A/_outer(np.multiply, np.sqrt(a_ii))

@@ -74,7 +74,7 @@ def odds_ratio(X, pseudocts=0.0):
     return _sq(a * d / (b * c)) + np.eye(X.shape[1])
 
 
-def MI_binary(X, pseudocts=0.0):
+def mutual_information(X, pseudocts=0.0):
     """Mutual Information over binary random variables
     
     For use in e.g. Chow-Liu Trees
@@ -108,7 +108,7 @@ def chow_liu(X, pseudocts=0.0):
     return _sq(
         _sq(
             minimum_spanning_tree(
-                np.exp(-(MI_binary(X, pseudocts=pseudocts)))
+                np.exp(-(mutual_information(X, pseudocts=pseudocts)))
             ).todense()
         )
     )
@@ -164,3 +164,5 @@ def resource_project(X):
     """
     P = ((X.T) / (X.sum(axis=1))) @ ((X) / (X.sum(axis=0)))
     return np.maximum(P, P.T)
+
+

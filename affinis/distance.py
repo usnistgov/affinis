@@ -2,7 +2,7 @@ import numpy as np
 from .proximity import forest
 
 
-def bilinear_distances(K):
+def bilinear_dists(K):
     """symmetric bilinear form associated with kernel K
 
     If K provides a quadratic form as q(x)=x'Kx, then the associated 
@@ -17,7 +17,7 @@ def bilinear_distances(K):
 
 def adjusted_forest_dists(L, beta=1.0):
     """due to Chebotarev and Avrachenkov"""
-    return beta*bilinear_distances(forest(L, beta=beta))
+    return beta*bilinear_dists(forest(L, beta=beta))
 
 
 def generalized_graph_dists(L, beta=1.0):
