@@ -5,6 +5,7 @@ import numpy as np
 from bidict import frozenbidict
 from scipy.linalg import lapack
 from scipy.sparse import coo_array
+from scipy.sparse.linalg import eigsh
 from scipy.spatial.distance import squareform
 
 
@@ -113,3 +114,38 @@ def sparse_adj_to_incidence(A):
     return coo_array((ones, (idx, S.row)), shape=shape) - coo_array(
         (ones, (idx, S.col)), shape=shape
     )
+
+def n_nodes_from_edges(e):
+    return int((np.sqrt(8*e.shape[0]+1)+1)//2)
+    
+
+def edge_mask_to_laplacian(e):
+    """given a masked array of edge-weights, form a laplacian matrix with a -1 if 
+    the edge wasn't filtered. 
+    """
+    n = n_nodes_from_edges(e)
+    lap=np.ma.zeros((n,n))
+    lap[np.triu_indices(n, k=1)]=(~e.mask).astype(int)
+    # lap[np.tril_indices(n, k=-1)]=np.tril_indices(lap.T)
+    lap = lap+lap.T
+    lap[np.diag_indices(n)] = -np.sum(lap, axis=0)
+    return -lap
+
+
+def _binary_search(a: np.ndarray, condf:Callable, l, r):
+    if l >= r:
+        return l, a[l]
+    else:
+        m = (l + r) // 2
+        if condf(a[m]):
+            # print(f'for l: ({l}){a[l]:.03f}\tm: ({m}){a[m]:.03f}\tr:({r}){a[r]:.03f}\n yup, Im good!')
+            next_unique = np.argmax(a>a[m])
+            return _binary_search(a, condf, next_unique, r) # skip duplicates
+        else:
+            # print(f'for l: ({l}){a[l]:.03f}\tm: ({m}){a[m]:.03f}\tr:({r}){a[r]:.03f}\n nope, not it fam')
+            return _binary_search(a, condf, l, m)
+
+# def _is_connected(L):
+#     # p_thres = p * (p > thres)
+#     # L = laplacian(p_thres)
+#     
