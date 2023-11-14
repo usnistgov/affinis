@@ -28,6 +28,7 @@ ruff = "^0.0.275"
 [tool.poetry.group.docs.dependencies]
 pydlc = "^0.2"
 pygraphviz = "^1.11"
+netgraph = "^4.12.11"
 
 [build-system]
 requires = ["poetry>=0.12"]

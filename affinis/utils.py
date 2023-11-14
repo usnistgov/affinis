@@ -5,7 +5,7 @@ import numpy as np
 from bidict import frozenbidict
 from scipy.linalg import lapack
 from scipy.sparse import coo_array
-from scipy.sparse.linalg import eigsh
+# from scipy.sparse.linalg import eigsh
 from scipy.spatial.distance import squareform
 
 
@@ -132,18 +132,20 @@ def edge_mask_to_laplacian(e):
     return -lap
 
 
-def _binary_search(a: np.ndarray, condf:Callable, l, r):
+def _binary_search_greatest(a: np.ndarray, condf:Callable, l, r):
     if l >= r:
-        return l, a[l]
+        # print(f'exiting at l:{l}, r:{r}, for value a[l]: {a[l]}')
+        return l-1, a[l-1]
     else:
         m = (l + r) // 2
         if condf(a[m]):
             # print(f'for l: ({l}){a[l]:.03f}\tm: ({m}){a[m]:.03f}\tr:({r}){a[r]:.03f}\n yup, Im good!')
-            next_unique = np.argmax(a>a[m])
-            return _binary_search(a, condf, next_unique, r) # skip duplicates
+            # next_unique = np.argmax(a>a[m])
+            return _binary_search_greatest(a, condf,m+1, r) # skip duplicates
         else:
             # print(f'for l: ({l}){a[l]:.03f}\tm: ({m}){a[m]:.03f}\tr:({r}){a[r]:.03f}\n nope, not it fam')
-            return _binary_search(a, condf, l, m)
+            # next_unique = np.argmax(a<=a[m])
+            return _binary_search_greatest(a, condf, l, m)
 
 # def _is_connected(L):
 #     # p_thres = p * (p > thres)

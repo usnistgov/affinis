@@ -1,8 +1,8 @@
 import numpy as np
 from numpy import ma
 import scipy.sparse as sp
-from .utils import edge_mask_to_laplacian, _binary_search, n_nodes_from_edges
-from functools import partial
+from .utils import edge_mask_to_laplacian, _binary_search_greatest, n_nodes_from_edges
+# from functools import partial
 
 def check_connected(L):
     """Uses sparse routine to calculate first two eigenvalues (smallest). 
@@ -25,11 +25,14 @@ def min_connected_filter(edge_weights):
     # ds = sinkhorn(adj)
     # ds_edges = edgelist(ds)
     n = n_nodes_from_edges(edge_weights)
-    connected = lambda thres: check_connected(edge_mask_to_laplacian(threshold_edges_filter(edge_weights, thres)))
+    def connected(thres): 
+        return check_connected(
+            edge_mask_to_laplacian(threshold_edges_filter(edge_weights, thres))
+        )
     pos = edge_weights.argsort()
 
 
-    min_idx, min_thres = _binary_search(
+    min_idx, min_thres = _binary_search_greatest(
         edge_weights[pos],
         connected,
         0,
