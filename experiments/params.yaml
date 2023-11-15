@@ -1,0 +1,10 @@
+seed: 2
+
+random_graphs:
+  graph_pop_size: 1000
+  n_nodes: 
+    - 10
+    - 30
+    - 100
+    - 300
+    - 1000

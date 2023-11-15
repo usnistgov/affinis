@@ -1,0 +1,26 @@
+import networkx as nx
+from toolz import juxt
+import numpy as np
+import dvc.api
+
+params=dvc.api.params_show()
+
+rng = np.random.default_rng(seed=params['seed'])
+
+
+if __name__=="__main__":
+    print(params)
+
+    graphs: list[nx.Graph] = nx.random_unlabeled_tree(
+        30, 
+        number_of_trees=params['random_graphs']['graph_pop_size'], 
+        seed=rng
+    )
+
+    (graphs 
+     |> map$(nx.line_graph)
+     |> map$(.number_of_edges()) 
+    #  |> all_equal 
+     |> juxt(np.mean, np.std)
+     |> print
+    )

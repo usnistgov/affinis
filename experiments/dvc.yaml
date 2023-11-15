@@ -1,0 +1,8 @@
+params: 
+  - params.yaml
+  # - random_graphs
+stages: 
+  graph_samples:
+    cmd: coconut -r experiments/random_graphs/random_block_graphs.coco
+    deps: 
+      - experiments/random_graphs/random_block_graphs.coco
