@@ -5,11 +5,11 @@ jupytext:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.14.4
+    jupytext_version: 1.16.0
 kernelspec:
   display_name: affinis
   language: python
-  name: python3
+  name: affinis
 ---
 
 # Smoothly Interpolating Shortest Path and Resistance Distances
@@ -17,8 +17,6 @@ kernelspec:
 The "Forest Distances" i.e. Regularized Laplacian Kernels
 
 ```{code-cell} ipython3
-:tags: []
-
 # generic
 import networkx as nx
 import seaborn as sns 
@@ -64,8 +62,6 @@ sns.set_theme(style='white')
 ```
 
 ```{code-cell} ipython3
-:tags: []
-
 # affinis imports
 from affinis.metrics import f_beta
 from affinis.utils import (
@@ -89,6 +85,9 @@ from affinis.associations import (
     yule_q, yule_y,
     ochiai,
     resource_project,
+    high_salience_skeleton, 
+    SFD_edge_prob,
+    SFD_interaction_prob,
 )
 from affinis.proximity import forest, forest_correlation, sinkhorn
 from affinis.sample import _random_cut, _random_bridge
@@ -109,16 +108,16 @@ G = nx.relabel.relabel_nodes(nx.convert_node_labels_to_integers(friendships),dic
 ```
 
 ```{code-cell} ipython3
-def draw_G(G):
+def draw_G(G, ax=None):
     
-    f = plt.figure(figsize=(5,4)).patch.set_alpha(0.)
     pos=nx.layout.kamada_kawai_layout(G)
     nx.draw(G, pos=pos, 
-            node_color='xkcd:puce', edge_color='grey')
-    nx.draw_networkx_labels(G, pos=pos, font_color='k',labels={n:n.split('_')[-1] for n in G})
+            node_color='xkcd:puce', edge_color='grey', ax=ax)
+    nx.draw_networkx_labels(G, pos=pos, font_color='k',labels={n:n.split('_')[-1] for n in G}, ax=ax)
     plt.title('Author Friendships', color='grey')
-    return f, pos
-f,pos = draw_G(G)
+    return pos
+f = plt.figure(figsize=(5,4)).patch.set_alpha(0.)
+pos = draw_G(G)
 ```
 
 ```{code-cell} ipython3
@@ -136,8 +135,6 @@ sns.heatmap(ap_sp)
 ```
 
 ```{code-cell} ipython3
-:tags: []
-
 x = np.logspace(-2,2)
 ys = np.vstack([_sq(forest(nx.laplacian_matrix(G), beta=i)) for i in x])
 # ys = np.vstack([prox_to_edgeprob(forest(nx.laplacian_matrix(G), beta=i)) for i in x])
@@ -146,16 +143,12 @@ ys.shape
 ```
 
 ```{code-cell} ipython3
-:tags: []
-
 plt.plot(x, ys, color='b', alpha=.1);
 # plt.yscale('log')
 plt.xscale('log')
 ```
 
 ```{code-cell} ipython3
-:tags: []
-
 
 # im = dense_lines(ys.T,x=x, cmap='cividis', ny=50, norm=LogNorm())
 # plt.yscale('log')
@@ -164,8 +157,6 @@ plt.xscale('log')
 ```
 
 ```{code-cell} ipython3
-:tags: []
-
 def minmax(x, axis=None): 
     return np.subtract(x,x.min(axis=axis))/np.subtract(x.max(axis=axis),x.min(axis=axis))
 
@@ -173,13 +164,9 @@ plt.plot(x,minmax(ys.T, axis=0).T, color='b', alpha=0.1);
 plt.xscale('log')
 ```
 
-+++ {"tags": []}
-
 ## Structure Recovery
 
 ```{code-cell} ipython3
-:tags: []
-
 true = _sq(np.diag(np.diag(L))-L)  # True Adjacency
 pre,rec,thr = zip(*map(partial(precision_recall_curve, true), ys))
 
@@ -215,6 +202,8 @@ def sim_papers(n_weeks, L, jumps_param=0.1, rng=np.random.default_rng(2)):
 
     yield from (sim_week() for i in range(n_weeks))
 
+# n_obs ~ neg_binom(2, 1/n_nodes)
+# n_jumps ~ geom(2/n_nodes)
 X = np.vstack(list(sim_papers(
     50, 
     pd.DataFrame(L, columns=author_idx, index=author_idx), 
@@ -236,8 +225,6 @@ plt.legend()
 ```
 
 ```{code-cell} ipython3
-:tags: []
-
 plt.spy(X)
 # rng.geometric(0.05)
 ```
@@ -257,8 +244,8 @@ Sinkorn-Knopp takes a square matrix and projects it onto the closest point in th
 ```{code-cell} ipython3
 sns.histplot(pd.DataFrame(
     data={
-        'co-occurrence+sinkhorn':_sq(sinkhorn(coocur_prob(X, pseudocts=0.5))), 
-        'forest matrix of true graph': _sq(forest(L, beta=5)),
+        'co-occurrence+sinkhorn':_sq(sinkhorn(_sq(_sq(X.T@X)))), 
+        'forest matrix of true graph': _sq(forest(L, beta=2)),
     }
 ), stat='density', bins=np.linspace(0,0.25,15))
 ```
@@ -272,7 +259,7 @@ We treat the cosine similarity (Ochiai coeff.) as the sample estimator of the fo
 sns.histplot(pd.DataFrame(
     data={
         'cosine-similarity':_sq(ochiai(X, pseudocts=0.5)), 
-        'forest corr. of true graph': _sq(forest_correlation(L, beta=5)),
+        'forest corr. of true graph': _sq(forest_correlation(L, beta=2)),
     }
 ), stat='density', bins=np.linspace(0,1,15))
 ```
@@ -280,8 +267,6 @@ sns.histplot(pd.DataFrame(
 ## Noisy Structure Recovery (Inverse Problem)
 
 ```{code-cell} ipython3
-:tags: []
-
 def prox_to_laplacian(K):
     A = -_sq(_sq(K))
     np.fill_diagonal(A,-A.sum(axis=0))
@@ -289,16 +274,19 @@ def prox_to_laplacian(K):
 
 baselines = {
     # 'co-occur':_sq(coocur_prob(X, pseudocts=1.)),
-    'cosine': _sq(ochiai(X, pseudocts=1.)),
-    'sinkhornOTP': _sq(sinkhorn(coocur_prob(X, pseudocts=1.), err=1e-8)),
+    'cosine': _sq(ochiai(X, pseudocts=0.5)),
+    'sinkhornOTP': _sq(sinkhorn(_sq(_sq(X.T@X)), err=1e-8)),
     'resourceProj': _sq(resource_project(X)),
-    # 'odds-ratio': _sq(odds_ratio(X, pseudocts=1)),
-    'yuleQ':_sq(yule_q(X, pseudocts=1.)),
+    'odds-ratio': _sq(odds_ratio(X, pseudocts=0.5)),
+    # 'yuleQ':_sq(yule_q(X, pseudocts=0.5)),
+    'yuleY':_sq(yule_y(X, pseudocts=0.5)),
+
     # 'yuley': prox_to_edgeprob(yule_y(X)),
-    'mutualinfo': _sq(mutual_information(X, pseudocts=1.)),
+    'mutualinfo': _sq(mutual_information(X, pseudocts=0.5)),
     # 'yuleq':np.arcsin(prox_to_edgeprob(yule_y(X)))/np.pi +0.5,
     'glasso': -_sq(GraphicalLasso().fit(X).get_precision()),
-    'chow-liu':_sq((chow_liu(X, pseudocts=0.5)>0.).astype(int)), 
+    # 'chow-liu':_sq((chow_liu(X, pseudocts=0.5)>0.).astype(int)), 
+    'HSS': _sq(high_salience_skeleton(X))
 
 
     # 'sinkhorn-cos': _squareform(sinkhorn(cos - np.diag(np.diag(cos)), err=1e-8)),
@@ -327,8 +315,6 @@ plt.spy(L, marker='x', alpha=0.4)
 ```
 
 ```{code-cell} ipython3
-:tags: []
-
 from sklearn.metrics import PrecisionRecallDisplay
 
 for lab,Aest in baselines.items():
@@ -488,13 +474,13 @@ sns.heatmap(_sq(P_postr))
 
 ```{code-cell} ipython3
 # hinton(_sq(E_model/E_expect))
-_sq(E_model/E_expect)
-hinton(10*(prox_to_laplacian((L_prior*L_postr*_sq(E_model)))))
-plt.spy(L, marker='x')
+# _sq(E_model/E_expect)
+# hinton(10*(prox_to_laplacian((L_prior*L_postr*_sq(E_model)))))
+# plt.spy(L, marker='x')
 ```
 
 ```{code-cell} ipython3
-sns.heatmap(_sq((E_obs.sum(axis=0)+0.5)/(unroll_node_obs(X).sum(axis=0)+1)*_sq(ochiai(X, pseudocts=0.5))))
+# sns.heatmap(_sq((E_obs.sum(axis=0)+0.5)/(unroll_node_obs(X).sum(axis=0)+1)*_sq(ochiai(X, pseudocts=0.5))))
 ```
 
 ```{code-cell} ipython3
@@ -534,7 +520,8 @@ plt.spy(L, marker='x')
 
 # mst_post = (E_obs.sum(axis=0)+0.5)*_sq((lambda o:o/(o+1))(np.sqrt((odds_ratio(X, pseudocts=0.5)))))/(_sq(X.T@X)+1)
 
-mst_post = (E_obs.sum(axis=0)+0.5)*_sq(coocur_prob(X, pseudocts=0.5))/(_sq(X.T@X)+1)
+mst_post = _sq(SFD_interaction_prob(X, pseudocts=0.5))
+# mst_post = (E_obs.sum(axis=0)+0.5)*_sq(coocur_prob(X, pseudocts=0.5))/(_sq(X.T@X)+1)
 
 
 
@@ -553,7 +540,7 @@ plt.subplot(122)
 plt.imshow(post_L:=(lambda o:o/(o+1))(_sq(mst_post)/forest(_norm_diag((lambda a: np.diag(a.sum(axis=0))-a)(_sq(mst_post))), beta=10)))
 plt.colorbar()
 plt.spy(L, marker='x')
-post_L
+# post_L
 ```
 
 ```{code-cell} ipython3
@@ -566,15 +553,70 @@ PrecisionRecallDisplay.from_predictions(
 ```
 
 ```{code-cell} ipython3
-def binary_hellinger(a,b):
-    return np.sqrt(1-(np.sqrt(a*b)+np.sqrt((1-a)*(1-b))))
-# (1-(np.sqrt(true*_sq(post_L))+np.sqrt((1-true)*_sq(1-post_L)))).mean(), 
-binary_hellinger(true, _sq(post_L)).mean(), binary_hellinger(true, mst_post).mean()
+# sns.heatmap(_sq(mst_post)*_outer(np.multiply,2*_sq(mst_post).sum(axis=1)))
+from scipy.special import logit, expit, logsumexp
+# ochiai(X).sum(axis=0), X.sum(axis=0)
+# coo_array(np.triu(_sq(mst_post)))
+X_est = coo_array(E_obs@np.abs(np.diag(mst_post)@sparse_adj_to_incidence(coo_array(np.triu(_sq(mst_post)))))).toarray()
+# sns.heatmap(np.ma.divide((X.T/X.sum(axis=1)).T, np.ma.divide(X_est.todense().T,X_est.sum(axis=1)).T))
+# sns.heatmap(X_est)
+f,ax = plt.subplots(ncols=2, figsize=(8,3))
+
+sns.heatmap(_sq(mst_post),ax=ax[0], square=True)
+# sns.heatmap(np.diag(7*X_est.std(axis=0))@_sq(mst_post)@np.diag(7*X_est.std(axis=0)))
+# sns.heatmap(
+#     _sq(mst_norm:=(lambda x: x/(1+x))(
+#             (lambda x: x/(1-x))(mst_post)*_sq(
+#                 _outer(
+#                     np.multiply,
+#                     # np.ma.divide(X_est.T,X_est.sum(axis=1)).filled(0).T.sum(axis=0)
+#                     X_est.max(axis=0)
+#                       )
+#             ))),
+#     ax=ax[1], square=True,
+# )
+sns.heatmap(
+    _sq(mst_norm:=mst_post/_sq(_outer(
+        np.multiply, 
+        np.sqrt(_sq(mst_post).max(axis=0)#- _sq(mst_post).min(axis=0)
+        # np.sqrt(logsumexp(_sq(mst_post), axis=0, b=0.05)), 
+    )))),
+    ax=ax[1]
+)
+# sns.heatmap(_sq(expit(*logit(mst_post))))
+# 2*np.arctanh(mst_post)
+# 1 + mst_post**2/
+```
+
+```{code-cell} ipython3
+PrecisionRecallDisplay.from_predictions(true,mst_norm, name='edge probability', ax=plt.gca())
+PrecisionRecallDisplay.from_predictions(
+    true, 
+    mst_post, 
+    name='interraction probability', ax=plt.gca()
+    )
+```
+
+```{code-cell} ipython3
+plt.imshow(_sq(mst_post))
+plt.spy(A, marker='x')
+```
+
+```{code-cell} ipython3
+sns.histplot(np.ma.masked_where(E_obs.sum(axis=0)<1, mst_norm), log_scale=True)
+# f,ax = plt.subplots(ncols=2)
+
+# sns.heatmap(sinkhorn(_sq(_sq(X.T@X))), square=True, ax=ax[0])
+# sns.heatmap(sinkhorn(_sq(_sq(X_est.T@X_est))), square=True, ax=ax[1])
+# (X_est.T@X_est)
+# hinton(np.ma.masked_greater_equal(np.ma.divide(ochiai(X),ochiai(X_est)), 0.5).filled(0))
+# plt.spy(A, marker='x')
 ```
 
 ```{code-cell} ipython3
 draw_G(G)
-thres_lim = 0.3
+thres_lim = 0.1
+post_L = _sq(mst_norm)
 nx.draw_networkx_edges(
     nx.from_pandas_adjacency(
         pd.DataFrame((post_L>thres_lim)*_sq(_sq(~A)), columns=author_idx, index=author_idx)
@@ -679,6 +721,15 @@ ax[2].set(title='OLS projection')
 ```
 
 ```{code-cell} ipython3
+f,ax = plt.subplots(ncols=2, figsize=(8,5))
+
+sns.heatmap((lambda a: (a-a.mean(axis=0))/np.std(a, axis=0))(Xsol.T), square=True, ax=ax[0])
+sns.heatmap((lambda a: (a-a.mean(axis=0))/np.std(a, axis=0))(X_est),
+            square=True, ax=ax[1])
+# (lambda a: (a-a.mean(axis=0))/np.std(a, axis=0))(X_est.todense()).mean(axis=0)
+```
+
+```{code-cell} ipython3
 # sns.heatmap(np.linalg.solve(np.eye(n_authors)+1*L, np.abs(fullB.T))[:,mask].T)
 hinton(ochiai(np.linalg.solve((np.eye(n_authors)+0.1*L)*2., np.abs(fullB.T)).T, pseudocts=0.1))
 plt.spy(L, marker='.')
@@ -755,16 +806,17 @@ def improve_legend(ax=None):
 ```
 
 ```{code-cell} ipython3
-np.sqrt(np.dot(true-mst_post, true-mst_post))
-np.sqrt(((true-np.sqrt(mst_post))**2).sum())
+def binary_hellinger(a,b):
+    return np.sqrt(1-(np.sqrt(a*b)+np.sqrt((1-a)*(1-b))))
+# (1-(np.sqrt(true*_sq(post_L))+np.sqrt((1-true)*_sq(1-post_L)))).mean(), 
+binary_hellinger(true, _sq(post_L)).mean(), binary_hellinger(true, mst_post).mean()
 ```
 
 ```{code-cell} ipython3
-:tags: []
-
 # plt.plot(r,p, color='r', ls=':', zorder=0, alpha=0.5, label='pure cosine')
 # plt.plot(r,p, color='g', ls=':', zorder=0, alpha=0.5, label='Sinkhorn OT')
-from sklearn.metrics import matthews_corrcoef, average_precision_score
+from sklearn.metrics import matthews_corrcoef, average_precision_score, fbeta_score
+# from affinis.utils import edge_mask_to_laplacian
 # from scipy.stats import multivariate_normal, beta
 from scipy import stats
 from scipy.interpolate import interp1d
@@ -776,9 +828,10 @@ def human_thres_expect(x_thres, score):
     # return 0.5*thres_expect(stats.beta(0.5,0.5),x_thres, score)+0.5*thres_expect(stats.beta(2.5,1.7),x_thres,score)
     # return thres_expect(stats.beta(2.5,1.7), x_thres,score)
     return trapezoid(score, x=x_thres)
-    
-baselines['MST_e'] = _sq(post_L)
-baselines['MST_i'] = mst_post
+
+
+baselines['MST_e'] = _sq(SFD_edge_prob(X))
+baselines['MST_i'] = _sq(SFD_interaction_prob(X))
 
 fig, (ax0, ax1, ax2) = plt.subplots(ncols=3, figsize=(15,5))
 # fig.add_subplot(
@@ -810,16 +863,163 @@ for n,(lab,Aest) in enumerate(baselines.items()):
         f'\t{average_precision_score(true, Aest):>10.2f}'
     )
 
-    # ax1.plot(x_thres[:-1], f_beta(beta, p,r)[:-1], color=cmap(n), ls='-', label=lab)
-    # ax2.plot(x_thres[:-1], mcorr[:-1], color=cmap(n), ls='-', label=lab)
-    ax1.plot(x_thres, cumulative_trapezoid(f_beta(beta, p,r), x=x_thres, initial=0.), 
-             color=cmap(n), ls='-', label=lab)
-    ax2.plot(x_thres, cumulative_trapezoid(mcorr, x=x_thres, initial=0.), 
-             color=cmap(n), ls='-', label=lab)
+    ax1.plot(x_thres[:-1], f_beta(beta, p,r)[:-1], color=cmap(n), ls='-', label=lab)
+    ax2.plot(x_thres[:-1], mcorr[:-1], color=cmap(n), ls='-', label=lab)
+    # ax1.plot(x_thres, cumulative_trapezoid(f_beta(beta, p,r), x=x_thres, initial=0.), 
+    #          color=cmap(n), ls='-', label=lab)
+    # ax2.plot(x_thres, cumulative_trapezoid(mcorr, x=x_thres, initial=0.), 
+    #          color=cmap(n), ls='-', label=lab)
 
 
 improve_legend(ax1)
 improve_legend(ax2)
+```
+
+```{code-cell} ipython3
+from affinis.filter import min_connected_filter
+from toolz import valmap
+eps = 1e-4*np.random.rand(baselines['cosine'].shape[0])
+baselines_mcf = valmap(lambda x: ~min_connected_filter(x).mask, baselines)
+for lab,est in baselines_mcf.items():
+    # MCF = min_connected_filter(est+eps)
+    print(lab, '\t', f'{fbeta_score(true, est, beta=0.5):>10.2f}') 
+    
+```
+
+```{code-cell} ipython3
+from scipy import stats #import binom, bernoulli, beta
+from scipy.integrate import quad
+# trapezoid()
+# bernoulli(0.6).pmf(np.array([0,1,1,0])).prod()
+# binom(4, 0.6).pmf(2)
+def binom_jeff(n,s): 
+    # b = np.beta(s+0.5, n-s+0.5)
+    def Ppost(p): 
+        return p**(s-0.5)*(1-p)**(n-s-0.5)/b.pdf(p)
+    return Ppost
+# m1,tol = quad(binom_jeff(10,1),0,1)
+# beta(2+0.5, 4-2+0.5).pdf(0.6)
+# binom(10,0.6).pmf(1)/m1
+np.random.binomial(np.arange(10), 0.5)
+```
+
+```{code-cell} ipython3
+# Aest = _sq(baselines_mcf['MST_i'])
+# thres_lim = 0.3
+f,ax = plt.subplots(nrows=5,ncols=2, figsize=(15,30))
+
+for n, (lab, E_est) in enumerate(baselines_mcf.items()):
+    draw_G(G, ax=ax.flatten()[n])
+    ax.flatten()[n].set_title(lab)
+    Aest = _sq(E_est)
+    nx.draw_networkx_edges(
+        nx.from_pandas_adjacency(
+            pd.DataFrame(Aest*_sq(_sq(~A)), columns=author_idx, index=author_idx)
+        ), 
+        edge_color='xkcd:purple', width=2,
+        pos=pos, ax=ax.flatten()[n]
+    )
+    nx.draw_networkx_edges(
+        nx.from_pandas_adjacency(
+            pd.DataFrame(Aest*_sq(_sq(A)), columns=author_idx, index=author_idx)
+        ), edge_color='xkcd:emerald', width=2,
+        pos=pos, ax=ax.flatten()[n]
+    )
+
+    # nx.draw_networkx_edges(
+    #     nx.from_pandas_adjacency(
+    #         pd.DataFrame(~Aest*_sq(_sq(A)), columns=author_idx, index=author_idx)
+    #     ), edge_color='xkcd:orange', pos=pos, ax=ax.flatten()[n]
+    # )
+```
+
+```{code-cell} ipython3
+
+# binom_jeff(10,2)(0.8)
+# beta.cdf([0,0.5,1],a=[1,2,3],b=[1,2,3])
+cts = _sq(X.T@X)
+x = np.linspace(0,1, num=100)
+posterior_p = stats.beta.pdf(
+    # baselines['cosine'][...,None],
+    x[...,None],
+    (E_obs.sum(axis=0)+0.5)[cts>3],
+    (cts - E_obs.sum(axis=0) + 0.5)[cts>3],
+)
+plt.plot(x, posterior_p);
+stats.beta.var(
+    # baselines['cosine'][...,None],
+    # x[...,None],
+    (E_obs.sum(axis=0)+0.5)[cts>3],
+    (cts - E_obs.sum(axis=0) + 0.5),
+)
+```
+
+```{code-cell} ipython3
+
+```
+
+```{code-cell} ipython3
+from scipy.special import beta as Beta
+
+# marginal likelihood from beta binom
+a_n = (E_obs.sum(axis=0)+0.5)
+b_n = (cts - E_obs.sum(axis=0) + 0.5)
+marg1=Beta(a_n,b_n)/Beta(0.5,0.5)  # jeffreys
+
+
+# likelihood based on point-estimate
+marg2=stats.binom.pmf(
+    E_obs.sum(axis=0),
+    cts,
+    baselines['cosine']
+    
+)
+post_prob = (lambda o: o/(o+1))((lambda p: p/(1-p))(baselines['cosine'])*(marg1/marg2))
+# sns.histplot(marg1/marg2)
+hinton(_sq(post_prob))
+plt.spy(A, marker='o')
+```
+
+```{code-cell} ipython3
+# a_n/(a_n+b_n)
+# sns.histplot(marg1/marg2)
+```
+
+```{code-cell} ipython3
+hinton(_sq(baselines_mcf['MST_i']))
+
+plt.spy(A, marker='.', alpha=0.5)
+```
+
+```{code-cell} ipython3
+# sns.heatmap((lambda a: _norm_diag(np.ma.log((1+a)/(1-a)).filled(0)/2)-np.eye(n_authors))(forest(L, beta=10)))
+SS = (1j*np.tril(L, k=-1) - 1j*np.tril(L, k=-1).T)
+shuff = rng.choice(n_authors)
+# sns.heatmap(_norm_diag(np.abs(np.real((np.eye(n_authors)-SS)@np.linalg.inv(np.eye(n_authors)+ SS)))))
+# rng.permutation(SS)
+
+# hinton(-(np.eye(n_authors)+np.imag((lambda a: (1-a)/(1+a))(1j*_norm_diag(forest(L))))))
+# plt.spy(L, marker='.')
+
+from scipy.linalg import polar
+
+U,P = polar(np.eye(n_authors)-_norm_diag(L))
+
+sns.heatmap(U)
+```
+
+```{code-cell} ipython3
+U,P = polar(yule_q(X, pseudocts=0.5))
+sns.heatmap(U)
+# U
+```
+
+```{code-cell} ipython3
+# hinton( 1-np.eye(n_authors) - (np.real((lambda a: (1-a)/(1+a))(1j*_norm_diag(forest(L))))))
+# plt.spy(L, marker='.')
+
+Bj = 1j*np.eye(n_authors)[coo_array(A).row] - 1j*np.eye(n_authors)[coo_array(A).col]
+(Bj.T@Bj)/2
 ```
 
 ```{code-cell} ipython3
@@ -842,6 +1042,8 @@ np.array([[0.1,1/25.,3/50.,0.2,3/5.][n]*thres_expect(stats.triang(i),x_thres,mco
 # plt.plot((np.linspace(0,1)), interp1d(x_thres,mcorr,bounds_error=False)(np.linspace(0,1)))
 # multivariate_normal(cov=np.eye(n_authors)).logpdf(np.array(struct.todense())[:,:-1])
 ```
+
++++ {"jp-MarkdownHeadingCollapsed": true}
 
 ## EM Algorithm
 
@@ -1162,8 +1364,6 @@ plt.spy(B_e.T@B_e)
 ```
 
 ```{code-cell} ipython3
-:tags: []
-
 
 # softmax(
 
@@ -1237,8 +1437,6 @@ for it in trange(100):
 ```
 
 ```{code-cell} ipython3
-:tags: []
-
 # hinton(_sq(_sq(ochiai(X))-np.array(deps).mean()))
 # from scipy.stats import entropy
 # entropy(_sq(ochiai(X)), _sq(outer(np.multiply,papers.sum().values/papers.shape[0])))
@@ -1291,8 +1489,6 @@ hinton(coocur_prob(papers.values))
 (i.e. the first EM step)
 
 ```{code-cell} ipython3
-:tags: []
-
 # papers
 
 # dists = pd.DataFrame(_squareform(pdist((metadf:=Xdf).T, metric='cosine')), columns=metadf.columns, index=metadf.columns)
@@ -1427,8 +1623,6 @@ dists[metadf.iloc[2].astype(bool), metadf.iloc[2].astype(bool)]
 ```
 
 ```{code-cell} ipython3
-:tags: []
-
 np.std(np.diag(cooc)),np.std(_squareform(cooc-np.diag(np.diag(cooc))))
 ```
 
@@ -1437,8 +1631,6 @@ forest(np.diag(L_mst.sum(axis=1))-L_mst)
 ```
 
 ```{code-cell} ipython3
-:tags: []
-
 plt.subplot(1,2,1)
 plt.imshow((np.einsum('bi,bo->bio', X, X)).sum(axis=0))
 plt.subplot(1,2,2)
@@ -1448,21 +1640,15 @@ np.allclose((np.einsum('bi,bo->bio', X, X)).sum(axis=0),cooc)
 ```
 
 ```{code-cell} ipython3
-:tags: []
-
 prox_to_edgeprob((_squareform(ys[2])*np.einsum('bi,bo->bio', X, X)).sum(axis=0))
 ```
 
 ```{code-cell} ipython3
-:tags: []
-
 edgenorm=prox_to_edgeprob((np.einsum('bi,bo->bio', X, X)*_squareform(ys[1])).sum(axis=0))
 sns.heatmap(_squareform(edgenorm))
 ```
 
 ```{code-cell} ipython3
-:tags: []
-
 norm_fac = np.asarray(forest(L, beta=0.01))
 # norm_fac=np.asarray(A)
 # edgenorm=norm_adj((np.einsum('bi,bo->bio', X, X)).sum(axis=0)*norm_fac) # distributive
@@ -1472,8 +1658,6 @@ plt.spy(L-np.diag(np.diag(L)), marker='.', markersize=2, color='grey')
 ```
 
 ```{code-cell} ipython3
-:tags: []
-
 
 glasso=_squareform(GraphicalLassoCV().fit(X).get_precision(), checks=False)
 
@@ -1486,7 +1670,6 @@ plt.spy(L-np.diag(np.diag(L)), marker='.', markersize=2, color='grey')
 ---
 jupyter:
   outputs_hidden: true
-tags: []
 ---
 sns.displot(1/(1+np.exp(glasso)))
 ```
@@ -1507,8 +1690,6 @@ sns.heatmap(adjusted_forest_dists(L, ))
 ```
 
 ```{code-cell} ipython3
-:tags: []
-
 # p,r,t = precision_recall_curve(true, 1/(1+np.exp(-glasso)))
 p,r,t = precision_recall_curve(true, 1/(1+np.exp(glasso)))
 
@@ -1526,8 +1707,6 @@ glasso
 ```
 
 ```{code-cell} ipython3
-:tags: []
-
 def penrose(p,r):
     return (np.tanh(p+r)-np.tanh(p-r),np.tanh(p+r)+np.tanh(p-r))
 

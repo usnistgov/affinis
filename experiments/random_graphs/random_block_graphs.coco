@@ -59,16 +59,10 @@ def sim_graph_and_data(
     col_idx = rw.flatten()
     idx = np.unique(np.array([row_idx,col_idx]), axis=1)  # no duplicates
     # assert G.mat.shape[0]>=col_idx.max(), f'{G.mat.shape} A is bad for col pointer {col_idx.max()}' 
-    try: 
-        X = sparse.coo_matrix(
-            (np.ones_like(idx[0]), (idx[0], idx[1])), 
-            shape=(rw.shape[0], n)
-        ).astype(bool)
-    except ValueError: 
-        print(f'idx\n{idx}\n\nrw-max\t{rw.max()}\n\jumps\t{n_jumps}\nobs\t{n_obs}\nnodes\t{n_nodes}')
-        print(rw)
-        print(Gnx.nodes)
-        raise
+    X = sparse.coo_matrix(
+        (np.ones_like(idx[0]), (idx[0], idx[1])), 
+        shape=(rw.shape[0], n)
+    ).astype(bool)
     return G.mat, X
 
 # def _sim_graph_and_data_generator(sim_func, n_sims):

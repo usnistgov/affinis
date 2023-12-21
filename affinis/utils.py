@@ -4,33 +4,41 @@ from typing import Callable
 import numpy as np
 from bidict import frozenbidict
 from scipy.linalg import lapack
-from scipy.sparse import coo_array
+from scipy.sparse import coo_array, dok_array
+
 # from scipy.sparse.linalg import eigsh
 from scipy.spatial.distance import squareform
 
 
-def _outer(f:Callable[[np.ndarray,np.ndarray],np.ndarray], a:np.ndarray):
+def _outer(f: Callable[[np.ndarray, np.ndarray], np.ndarray], a: np.ndarray):
     """do a thing to every combination of entries in an array"""
-    return f.outer(a,a)
+    return f.outer(a, a)
+
 
 def _sq(A):
     """we want the off-diagonals, flat<->sq
-    
-    Typing this out got old. 
+
+    Typing this out got old.
     """
     return squareform(A, checks=False)
 
-def minmax(x, axis=None): 
-    return (x-x.min(axis=axis))/(x.max(axis=axis)-x.min(axis=axis))
+
+def minmax(x, axis=None):
+    return (x - x.min(axis=axis)) / (x.max(axis=axis) - x.min(axis=axis))
+
 
 def _norm_diag(A):
     a_ii = np.diag(A)
-    
-    return A/_outer(np.multiply, np.sqrt(a_ii))
+
+    return A / _outer(np.multiply, np.sqrt(a_ii))
 
 
 def _diag(A):
     return np.diag(np.diag(A))
+
+
+def _get_masked_sq(e_pmf, idx):
+    return coo_array(_sq(e_pmf) * np.multiply.outer(idx, idx))
 
 
 @cache
@@ -60,6 +68,14 @@ def _upper_triangular_to_symmetric(ut):
     n = ut.shape[0]
     inds = _tri_inds_cache(n)
     ut[inds] = ut.T[inds]
+
+
+def _sparse_directed_to_symmetric(s):
+    """OVERWRITES IN-PLACE"""
+    s = s.todok()
+    row, col = s.nonzero()
+    s[col, row] = s[row, col]
+    return s.tocsr()
 
 
 def _fast_PD_inverse(m):
@@ -115,39 +131,41 @@ def sparse_adj_to_incidence(A):
         (ones, (idx, S.col)), shape=shape
     )
 
+
 def n_nodes_from_edges(e):
-    return int((np.sqrt(8*e.shape[0]+1)+1)//2)
-    
+    return int((np.sqrt(8 * e.shape[0] + 1) + 1) // 2)
+
 
 def edge_mask_to_laplacian(e):
-    """given a masked array of edge-weights, form a laplacian matrix with a -1 if 
-    the edge wasn't filtered. 
+    """given a masked array of edge-weights, form a laplacian matrix with a -1 if
+    the edge wasn't filtered.
     """
     n = n_nodes_from_edges(e)
-    lap=np.ma.zeros((n,n))
-    lap[np.triu_indices(n, k=1)]=(~e.mask).astype(int)
+    lap = np.ma.zeros((n, n))
+    lap[np.triu_indices(n, k=1)] = (~e.mask).astype(int)
     # lap[np.tril_indices(n, k=-1)]=np.tril_indices(lap.T)
-    lap = lap+lap.T
+    lap = lap + lap.T
     lap[np.diag_indices(n)] = -np.sum(lap, axis=0)
     return -lap
 
 
-def _binary_search_greatest(a: np.ndarray, condf:Callable, l, r):
+def _binary_search_greatest(a: np.ndarray, condf: Callable, l, r):
     if l >= r:
         # print(f'exiting at l:{l}, r:{r}, for value a[l]: {a[l]}')
-        return l-1, a[l-1]
+        return l - 1, a[l - 1]
     else:
         m = (l + r) // 2
         if condf(a[m]):
             # print(f'for l: ({l}){a[l]:.03f}\tm: ({m}){a[m]:.03f}\tr:({r}){a[r]:.03f}\n yup, Im good!')
             # next_unique = np.argmax(a>a[m])
-            return _binary_search_greatest(a, condf,m+1, r) # skip duplicates
+            return _binary_search_greatest(a, condf, m + 1, r)  # skip duplicates
         else:
             # print(f'for l: ({l}){a[l]:.03f}\tm: ({m}){a[m]:.03f}\tr:({r}){a[r]:.03f}\n nope, not it fam')
             # next_unique = np.argmax(a<=a[m])
             return _binary_search_greatest(a, condf, l, m)
 
+
 # def _is_connected(L):
 #     # p_thres = p * (p > thres)
 #     # L = laplacian(p_thres)
-#     
+#
