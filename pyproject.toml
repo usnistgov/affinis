@@ -16,6 +16,7 @@ bidict = "^0.22.1"
 scipy = "^1.10"
 awkward = "^2.3.3"
 awkward-pandas = "^2023.8.0"
+plum-dispatch = "^2.2.2"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^5.2"
