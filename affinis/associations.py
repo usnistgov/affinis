@@ -2,6 +2,7 @@ import numpy as np
 from scipy.sparse.csgraph import minimum_spanning_tree, shortest_path, reconstruct_path
 from scipy.sparse import coo_array, issparse
 from .utils import _sq, _outer, _sparse_directed_to_symmetric, _get_masked_sq
+from .priors import pseudocount
 
 """
 All functions in this module take in data as _design matrices_ 
@@ -31,7 +32,7 @@ def coocur_prob(X, pseudocts=0.5):
 
     cts = _gram(X, X) + pseudocts
     tot = X.shape[0] + 2 * pseudocts
-    return cts / tot
+    return pseudocount(pseudocounts)(cts, tot)
 
 
 # def cond_prob(X, pseudocts=0.):
@@ -66,8 +67,9 @@ def _contingency_cts(X):
 
 
 def _contingency_prob(X, pseudocts=0.5):
+    psdct = pseudocount(pseudocts)
     cts = np.vstack(_contingency_cts(X)) + pseudocts
-    return [ct for ct in cts / (X.shape[0] + pseudocts * 2)]
+    return [psdct(ct, X.shape[0]) for ct in cts]
 
 
 def _binary_contingency(X):
@@ -163,10 +165,11 @@ def ochiai(X, pseudocts=0.5):
     laplace/additive pseudocounts on each bernoulli(-ish) "co-occurrence variable".
     """
     # I = np.eye(X.shape[-1])
-    co_occurs = _sq(_gram(X, X)) + pseudocts
+    co_occurs = _sq(_gram(X, X))  # + pseudocts
     exposures = X.sum(axis=0)
-    pseudo_exposure = np.sqrt(_outer(np.multiply, exposures)) + 2 * pseudocts
-    return _sq(co_occurs) / pseudo_exposure + np.eye(X.shape[1])
+    pseudo_exposure = _sq(np.sqrt(_outer(np.multiply, exposures)))  # + 2 * pseudocts
+    # return _sq(co_occurs) / pseudo_exposure + np.eye(X.shape[1])
+    return _sq(pseudocount(pseudocts)(co_occurs, pseudo_exposure)) + np.eye(X.shape[1])
 
 
 def binary_cosine_similarity(X, pseudocts=0.5):
@@ -201,7 +204,8 @@ def high_salience_skeleton(X, prior=ochiai, pseudocts=0.5):
             for p in pred
         ]
     )
-    hss = (E_obs.sum(axis=0) + pseudocts) / (E_obs.shape[0] + 2 * pseudocts)
+    hss = pseudocount(pseudocts)(E_obs.sum(axis=0), E_obs.shape[0])
+    # hss = (E_obs.sum(axis=0) + pseudocts) / (E_obs.shape[0] + 2 * pseudocts)
     return _sq(hss)
 
 
@@ -251,6 +255,7 @@ def SFD_edge_cond_prob(X, prior_dists=None, pseudocts=0.5):
     e_cts = _sq(SFD_interaction_cts(X, prior_dists=prior_dists))
     uv_cts = _sq(_gram(X, X))
     e_prob = (e_cts + pseudocts) / (uv_cts + 2 * pseudocts)
+    e_prob = pseudocount(pseudocts)(e_cts, uv_cts)
     return _sq(e_prob)
 
 
