@@ -804,6 +804,53 @@ binary_hellinger(true, _sq(post_L)).mean(), binary_hellinger(true, mst_post).mea
 ```
 
 ```{code-cell} ipython3
+# binom_jeff(10,2)(0.8)
+# beta.cdf([0,0.5,1],a=[1,2,3],b=[1,2,3])
+
+from affinis.priors import pseudocount
+
+
+cts = _sq(X.T@X)
+x = np.linspace(0,1, num=100)
+a,b = (2/n_authors, 1-2/n_authors)
+# a,b = (1/2, 1/2)
+
+c = E_obs.sum(axis=0)
+c = (c-a*cts)/(cts+1)
+
+a_n = a + c
+# b_n = b + cts - c
+b_n = 1-a_n
+
+# sum to 1
+# a_n = (c-a*cts)/(cts+1)
+# a_n = (cts/(cts+1))*(c/cts-a)
+# b_n = 1 - a_n
+## same as
+# a_n = a_n/(a_n+b_n)
+# b_n = 1-a_n
+
+# # norm to max (beta process)
+# a_n = a_n/np.maximum(a_n, b_n)
+# b_n = b_n/np.maximum(a_n, b_n)
+posterior_p = stats.beta.sf(
+    # baselines['cosine'][...,None],
+    x[...,None],
+    a_n,
+    b_n,
+)
+plt.plot(x, posterior_p);
+# stats.beta.mean(
+#     # baselines['cosine'][...,None],
+#     # x[...,None],
+#     a_n,
+#     b_n,
+# )
+# posterior_p[95].round(3)
+# np.around(pseudocount('min-connect')(E_obs.sum(axis=0), cts), decimals=3)
+```
+
+```{code-cell} ipython3
 # plt.plot(r,p, color='r', ls=':', zorder=0, alpha=0.5, label='pure cosine')
 # plt.plot(r,p, color='g', ls=':', zorder=0, alpha=0.5, label='Sinkhorn OT')
 from sklearn.metrics import matthews_corrcoef, average_precision_score, fbeta_score
@@ -840,7 +887,10 @@ def weights_to_laplacian(w):
     A = _sq(w)
     return np.diag(A.sum(axis=0)) - A
 
-baselines['MST_e'] = _sq(SFD_edge_prob(X))
+# baselines['MST_e'] = _sq(SFD_edge_prob(X))
+# baselines['MST_e'] = posterior_p[50]
+baselines['MST_e'] = stats.beta.mean(a_n,b_n)
+
 baselines['MST_i'] = _sq(SFD_interaction_prob(X))
 
 fig, (ax0, ax1, ax2) = plt.subplots(ncols=3, figsize=(15,5))
@@ -884,7 +934,10 @@ for n,(lab,Aest) in enumerate(baselines.items()):
         f'\t{human_thres_expect(x_thres, hell):>10.2f}'
         f'\t{average_precision_score(true, Aest):>10.2f}'
     )
-
+    ax0.set_title('Cuml. Hell. Cost')
+    ax1.set_title('Cuml. F_β Score')
+    ax2.set_title('Cuml. MCC Score')
+    # ax0.plot(x_thres[:-1], np.array(hell)[:-1], color=cmap(n), ls='-', label=lab)
     # ax1.plot(x_thres[:-1], f_beta(beta, p,r)[:-1], color=cmap(n), ls='-', label=lab)
     # ax2.plot(x_thres[:-1], mcorr[:-1], color=cmap(n), ls='-', label=lab)
     ax0.plot(x_thres, cumulative_trapezoid(np.array(hell), x=x_thres, initial=0.), 
@@ -893,6 +946,7 @@ for n,(lab,Aest) in enumerate(baselines.items()):
              color=cmap(n), ls='-', label=lab)
     ax2.plot(x_thres, cumulative_trapezoid(mcorr, x=x_thres, initial=0.), 
              color=cmap(n), ls='-', label=lab)
+    
 
 improve_legend(ax0)
 improve_legend(ax1)
@@ -973,23 +1027,14 @@ for n, (lab, E_est) in enumerate(baselines_mcf.items()):
 ```
 
 ```{code-cell} ipython3
-# binom_jeff(10,2)(0.8)
-# beta.cdf([0,0.5,1],a=[1,2,3],b=[1,2,3])
-cts = _sq(X.T@X)
-x = np.linspace(0,1, num=100)
-posterior_p = stats.beta.pdf(
-    # baselines['cosine'][...,None],
-    x[...,None],
-    (E_obs.sum(axis=0)+2./(n_authors-1)),#[cts>3],
-    (cts - E_obs.sum(axis=0) + 1.),#[cts>3],
-)
-plt.plot(x, posterior_p);
-stats.beta.mean(
-    # baselines['cosine'][...,None],
-    # x[...,None],
-    (E_obs.sum(axis=0)+2./(n_authors-1))[cts>3],
-    (cts - E_obs.sum(axis=0) + 1)[cts>3],
-)
+# stats.beta.std(
+#     # baselines['cosine'][...,None],
+#     # x[...,None],
+#     a_n,
+#     b_n,
+# ).sum()
+hinton(_sq(posterior_p[50]))
+plt.spy(A, marker='x')
 ```
 
 ```{code-cell} ipython3
@@ -1054,15 +1099,12 @@ jaccard_probability(_sq(A), baselines['cosine'])
 ```
 
 ```{code-cell} ipython3
-
 wasserstein_gaussian(np.linalg.pinv(L),np.linalg.pinv(weights_to_laplacian(baselines[''])))
 
 # sqrtm(forest(L, beta=5))
 ```
 
 ```{code-cell} ipython3
-
-
 juxt([np.sum, np.median, iqr])(entropy(forest(L), forest(weights_to_laplacian(baselines['MST_e']))))
 ```
 

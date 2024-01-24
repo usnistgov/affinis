@@ -18,7 +18,9 @@ def _safe_div(num: AL, den: AL) -> AL:
 
 
 @dispatch.abstract
-def pseudocount(prior: tuple[float, float] | str | float) -> ElemReduceFunc:
+def pseudocount(
+    prior: tuple[float, float] | tuple[str, float] | str | float
+) -> ElemReduceFunc:
     """Additive binomial smoothing via beta prior (beta-binomial)"""
     ...
 
@@ -82,5 +84,20 @@ def pseudocount(prior: Literal["min-connect"]) -> ElemReduceFunc:
     def _beta_binom_post(num: AL, den: AL) -> AL:
         n = _sq(num).shape[0]
         return _safe_div(num + 2.0 / n, den + 1.0)
+
+    return _beta_binom_post
+
+
+@dispatch
+def pseudocount(prior: tuple[Literal["zero-sum", float]]) -> ElemReduceFunc:
+    """TODO derive the approx-cts for projection onto simplex"""
+    a = prior[1]
+    b = 1 - a
+
+    def _beta_binom_post(suc: AL, tot: AL) -> AL:
+        c = (suc - a * tot) / (tot + 1)
+        a_n = a + c
+        b_n = 1 - a_n
+        return _safe_div(a_n, a_n + b_n)
 
     return _beta_binom_post
