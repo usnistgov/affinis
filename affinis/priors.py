@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 from plum import dispatch
+from numbers import Number
 from typing import Callable, Literal
 import numpy as np
 from numpy.typing import NDArray as AL
@@ -19,14 +20,14 @@ def _safe_div(num: AL, den: AL) -> AL:
 
 @dispatch.abstract
 def pseudocount(
-    prior: tuple[float, float] | tuple[str, float] | str | float
+    prior: tuple[Number, Number] | tuple[str, Number] | str | Number
 ) -> ElemReduceFunc:
     """Additive binomial smoothing via beta prior (beta-binomial)"""
     ...
 
 
 @dispatch
-def pseudocount(prior: float) -> ElemReduceFunc:
+def pseudocount(prior: Number) -> ElemReduceFunc:
     """additiv smoothing binomial with symmetric beta prior
 
     \\alpha == \\beta == prior
@@ -51,7 +52,7 @@ def pseudocount(prior: float) -> ElemReduceFunc:
 
 
 @dispatch
-def pseudocount(prior: tuple[float, float]) -> ElemReduceFunc:
+def pseudocount(prior: tuple[Number, Number]) -> ElemReduceFunc:
     """additive smoothing binomial with (possibly) asymmetric prior"""
     a, b = prior
 
@@ -89,12 +90,30 @@ def pseudocount(prior: Literal["min-connect"]) -> ElemReduceFunc:
 
 
 @dispatch
-def pseudocount(prior: tuple[Literal["zero-sum", float]]) -> ElemReduceFunc:
+def pseudocount(prior: tuple[Literal["zero-sum"], Number]) -> ElemReduceFunc:
     """TODO derive the approx-cts for projection onto simplex"""
     a = prior[1]
     b = 1 - a
 
     def _beta_binom_post(suc: AL, tot: AL) -> AL:
+        c = (suc - a * tot) / (tot + 1)
+        a_n = a + c
+        b_n = 1 - a_n
+        return _safe_div(a_n, a_n + b_n)
+
+    return _beta_binom_post
+
+
+@dispatch
+def pseudocount(
+    prior: tuple[Literal["zero-sum"], Literal["min-connect"]]
+) -> ElemReduceFunc:
+    """A combination of a zero-sum (a, 1-a) beta prior and a=2/n for tree-like"""
+
+    def _beta_binom_post(suc: AL, tot: AL) -> AL:
+        n = _sq(suc).shape[0]
+        a = 2 / n
+        b = 1 - a
         c = (suc - a * tot) / (tot + 1)
         a_n = a + c
         b_n = 1 - a_n

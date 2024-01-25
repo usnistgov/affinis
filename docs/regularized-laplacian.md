@@ -86,7 +86,7 @@ from affinis.associations import (
     ochiai,
     resource_project,
     high_salience_skeleton, 
-    SFD_edge_prob,
+    SFD_edge_cond_prob,
     SFD_interaction_prob,
 )
 from affinis.proximity import forest, forest_correlation, sinkhorn
@@ -253,9 +253,22 @@ Similarly there's a rough correspondence between cosine-sim and forest correlati
 We treat the cosine similarity (Ochiai coeff.) as the sample estimator of the forrest correlation matrix --- both are just cosine-law rescalings of the above plots (except we don't need to use sinkhorn-knopp... the diagonal is 1 already).
 
 ```{code-cell} ipython3
+
+```
+
+```{code-cell} ipython3
+# from affinis.priors import pseudocount
+psct = ('zero-sum','min-connect')
+sns.heatmap(
+    np.array([_sq(ochiai(X, pseudocts=psct)),
+              _sq(ochiai(X, pseudocts=0.5))]).T[:10]
+)
+```
+
+```{code-cell} ipython3
 sns.histplot(pd.DataFrame(
     data={
-        'cosine-similarity':_sq(ochiai(X, pseudocts=0.5)), 
+        'cosine-similarity':_sq(ochiai(X, pseudocts=psct)), 
         'forest corr. of true graph': _sq(forest_correlation(L, beta=2)),
     }
 ), stat='density', bins=np.linspace(0,1,15))
@@ -271,18 +284,18 @@ def prox_to_laplacian(K):
 
 baselines = {
     # 'co-occur':_sq(coocur_prob(X, pseudocts=1.)),
-    'cosine': _sq(ochiai(X, pseudocts=0.5)),
+    'cosine': _sq(ochiai(X, pseudocts=psct)),
     'sinkhornOTP': _sq(sinkhorn(_sq(_sq(X.T@X)), err=1e-8)),
     'resourceProj': _sq(resource_project(X)),
-    'odds-ratio': _sq(odds_ratio(X, pseudocts=0.5)),
-    # 'yuleQ':_sq(yule_q(X, pseudocts=0.5)),
-    'yuleY':_sq(yule_y(X, pseudocts=0.5)),
+    'odds-ratio': _sq(odds_ratio(X, pseudocts=psct)),
+    # 'yuleQ':_sq(yule_q(X, pseudocts=psct)),
+    'yuleY':_sq(yule_y(X, pseudocts=psct)),
 
     # 'yuley': prox_to_edgeprob(yule_y(X)),
-    'mutualinfo': _sq(mutual_information(X, pseudocts=0.5)),
+    'mutualinfo': _sq(mutual_information(X, pseudocts=psct)),
     # 'yuleq':np.arcsin(prox_to_edgeprob(yule_y(X)))/np.pi +0.5,
     'glasso': -_sq(GraphicalLasso().fit(X).get_precision()),
-    # 'chow-liu':_sq((chow_liu(X, pseudocts=0.5)>0.).astype(int)), 
+    # 'chow-liu':_sq((chow_liu(X, pseudocts=psct)>0.).astype(int)), 
     'HSS': _sq(high_salience_skeleton(X))
 
 
@@ -325,7 +338,7 @@ for lab,Aest in baselines.items():
 
 ```{code-cell} ipython3
 def approx_dists(X): 
-    Q_apprx = sinkhorn(coocur_prob(X, pseudocts=1.))
+    Q_apprx = sinkhorn(coocur_prob(X, pseudocts=0.5))
     norm = np.sqrt(np.multiply.outer(q_ii:=np.diag(Q_apprx), q_ii))
     return -np.log(Q_apprx/norm)
 
@@ -384,7 +397,7 @@ Xdf = papers.assign(root=1)
 
 # est_dists = np.nan_to_num(MI_df, nan=np.nanquantile(MI_df, 0.5))
 
-est_dists = bilinear_dists(sinkhorn(coocur_prob(X, pseudocts=0.5)))
+est_dists = bilinear_dists(sinkhorn(coocur_prob(X, pseudocts=psct)))
 
 hinton(est_dists)
 # 1-np.log(est_dists)
@@ -446,14 +459,14 @@ def prox_to_laplacian(K):
     np.fill_diagonal(A,-A.sum(axis=0))
     return A
 
-O_prior=_sq((lambda p: p/(1-p))(ochiai(X, pseudocts=0.5)))
+O_prior=_sq((lambda p: p/(1-p))(ochiai(X, pseudocts=psct)))
 # _outer(np.multiply, X.sum(axis=0))/
 # X.T@np.diag()@X
 # obs_weights=1/((lambda x:(x*(x-1)/2.))(X.sum(axis=1))+1)
 # obs_weights@X
 # obs_weights
 # np.sort(_sq(odds_ratio(X, pseudocts=1.)))
-L_prior = prox_to_laplacian(ochiai(X, pseudocts=0.5))
+L_prior = prox_to_laplacian(ochiai(X, pseudocts=psct))
 L_postr = _norm_diag(prox_to_laplacian(_sq(add_pmf)))
 # sns.heatmap(_sq(_sq(bilinear_dists( np.linalg.pinv(L_prior+np.ones_like(A)/n_authors)))*_sq(-L_prior)))
 E_expect = _sq(adjusted_forest_dists(L_prior, beta=5.))*_sq(-L_prior)
@@ -474,7 +487,7 @@ sns.heatmap(_sq(P_postr))
 ```
 
 ```{code-cell} ipython3
-# sns.heatmap(_sq((E_obs.sum(axis=0)+0.5)/(unroll_node_obs(X).sum(axis=0)+1)*_sq(ochiai(X, pseudocts=0.5))))
+# sns.heatmap(_sq((E_obs.sum(axis=0)+0.5)/(unroll_node_obs(X).sum(axis=0)+1)*_sq(ochiai(X, pseudocts=psct))))
 ```
 
 ```{code-cell} ipython3
@@ -488,15 +501,15 @@ def unroll_node_obs(X):
 
 PrecisionRecallDisplay.from_predictions(
     true,
-    # (E_obs.sum(axis=0)+0.5)/(unroll_node_obs(X).sum(axis=0)+1)*_sq(coocur_prob(X, pseudocts=0.5))
-    (E_obs.sum(axis=0)+0.5)*_sq(coocur_prob(X, pseudocts=0.5))/_sq(X.T@X+1)
+    # (E_obs.sum(axis=0)+0.5)/(unroll_node_obs(X).sum(axis=0)+1)*_sq(coocur_prob(X, pseudocts=psct))
+    (E_obs.sum(axis=0)+0.5)*_sq(coocur_prob(X, pseudocts=psct))/_sq(X.T@X+1)
 )
-(E_obs.sum(axis=0)+0.5)/(unroll_node_obs(X).sum(axis=0)+1)*_sq(coocur_prob(X, pseudocts=0.5))
+(E_obs.sum(axis=0)+0.5)/(unroll_node_obs(X).sum(axis=0)+1)*_sq(coocur_prob(X, pseudocts=psct))
 ```
 
 ```{code-cell} ipython3
-# plt.imshow((coocur_prob(X, pseudocts=0.5)/(X.T@X+1)))#/(unroll_node_obs(X).sum(axis=0) - _sq(X.T@X)
-plt.imshow(((lambda o:o/(o+1))(np.sqrt((odds_ratio(X, pseudocts=0.5)))))*_sq(E_obs.sum(axis=0)+0.5)/((X.T@X)+1))
+# plt.imshow((coocur_prob(X, pseudocts=psct)/(X.T@X+1)))#/(unroll_node_obs(X).sum(axis=0) - _sq(X.T@X)
+plt.imshow(((lambda o:o/(o+1))(np.sqrt((odds_ratio(X, pseudocts=psct)))))*_sq(E_obs.sum(axis=0)+0.5)/((X.T@X)+1))
 plt.spy(L, marker='x')
 # from sklearn.linear_model import LogisticRegression
 # from sklearn.multioutput import MultiOutputClassifier
@@ -509,12 +522,12 @@ plt.spy(L, marker='x')
 
 ```{code-cell} ipython3
 # mst_post = -_sq(prox_to_laplacian((L_prior*L_postr*_sq(E_model))))
-# mst_post = (E_obs.sum(axis=0)+0.5)/(unroll_node_obs(X).sum(axis=0)+1)*_sq(coocur_prob(X, pseudocts=0.5))
+# mst_post = (E_obs.sum(axis=0)+0.5)/(unroll_node_obs(X).sum(axis=0)+1)*_sq(coocur_prob(X, pseudocts=psct))
 
-# mst_post = (E_obs.sum(axis=0)+0.5)*_sq((lambda o:o/(o+1))(np.sqrt((odds_ratio(X, pseudocts=0.5)))))/(_sq(X.T@X)+1)
+# mst_post = (E_obs.sum(axis=0)+0.5)*_sq((lambda o:o/(o+1))(np.sqrt((odds_ratio(X, pseudocts=psct)))))/(_sq(X.T@X)+1)
 
-mst_post = _sq(SFD_interaction_prob(X, pseudocts=0.5))
-# mst_post = (E_obs.sum(axis=0)+0.5)*_sq(coocur_prob(X, pseudocts=0.5))/(_sq(X.T@X)+1)
+mst_post = _sq(SFD_interaction_prob(X, pseudocts=psct))
+# mst_post = (E_obs.sum(axis=0)+0.5)*_sq(coocur_prob(X, pseudocts=psct))/(_sq(X.T@X)+1)
 
 
 
@@ -804,6 +817,8 @@ binary_hellinger(true, _sq(post_L)).mean(), binary_hellinger(true, mst_post).mea
 ```
 
 ```{code-cell} ipython3
+from scipy import stats #import binom, bernoulli, beta
+
 # binom_jeff(10,2)(0.8)
 # beta.cdf([0,0.5,1],a=[1,2,3],b=[1,2,3])
 
@@ -887,11 +902,11 @@ def weights_to_laplacian(w):
     A = _sq(w)
     return np.diag(A.sum(axis=0)) - A
 
-# baselines['MST_e'] = _sq(SFD_edge_prob(X))
+baselines['MST_e'] = _sq(SFD_edge_cond_prob(X, pseudocts=psct))
 # baselines['MST_e'] = posterior_p[50]
-baselines['MST_e'] = stats.beta.mean(a_n,b_n)
+# baselines['MST_e'] = stats.beta.mean(a_n,b_n)
 
-baselines['MST_i'] = _sq(SFD_interaction_prob(X))
+baselines['MST_i'] = _sq(SFD_interaction_prob(X, pseudocts=psct))
 
 fig, (ax0, ax1, ax2) = plt.subplots(ncols=3, figsize=(15,5))
 # fig.add_subplot(
@@ -937,15 +952,15 @@ for n,(lab,Aest) in enumerate(baselines.items()):
     ax0.set_title('Cuml. Hell. Cost')
     ax1.set_title('Cuml. F_β Score')
     ax2.set_title('Cuml. MCC Score')
-    # ax0.plot(x_thres[:-1], np.array(hell)[:-1], color=cmap(n), ls='-', label=lab)
-    # ax1.plot(x_thres[:-1], f_beta(beta, p,r)[:-1], color=cmap(n), ls='-', label=lab)
-    # ax2.plot(x_thres[:-1], mcorr[:-1], color=cmap(n), ls='-', label=lab)
-    ax0.plot(x_thres, cumulative_trapezoid(np.array(hell), x=x_thres, initial=0.), 
-             color=cmap(n), ls='-', label=lab)
-    ax1.plot(x_thres, cumulative_trapezoid(f_beta(beta, p,r), x=x_thres, initial=0.), 
-             color=cmap(n), ls='-', label=lab)
-    ax2.plot(x_thres, cumulative_trapezoid(mcorr, x=x_thres, initial=0.), 
-             color=cmap(n), ls='-', label=lab)
+    ax0.plot(x_thres[:-1], np.array(hell)[:-1], color=cmap(n), ls='-', label=lab)
+    ax1.plot(x_thres[:-1], f_beta(beta, p,r)[:-1], color=cmap(n), ls='-', label=lab)
+    ax2.plot(x_thres[:-1], mcorr[:-1], color=cmap(n), ls='-', label=lab)
+    # ax0.plot(x_thres, cumulative_trapezoid(np.array(hell), x=x_thres, initial=0.), 
+    #          color=cmap(n), ls='-', label=lab)
+    # ax1.plot(x_thres, cumulative_trapezoid(f_beta(beta, p,r), x=x_thres, initial=0.), 
+    #          color=cmap(n), ls='-', label=lab)
+    # ax2.plot(x_thres, cumulative_trapezoid(mcorr, x=x_thres, initial=0.), 
+    #          color=cmap(n), ls='-', label=lab)
     
 
 improve_legend(ax0)
@@ -976,7 +991,7 @@ for lab,est in baselines_mcf.items():
 ```{code-cell} ipython3
 # sns.heatmap(_sq((E_obs.sum(axis=0)+0.5)*_sq(coocur_prob(X))/(cts+1) + (1-(E_obs.sum(axis=0)+0.5)/(cts+1))*(1-_sq(coocur_prob(X)))))
 
-sns.heatmap(SFD_edge_prob(X))
+sns.heatmap(SFD_edge_prob(X, pseudocts=psct))
 ```
 
 ```{code-cell} ipython3
@@ -1173,7 +1188,7 @@ sns.heatmap(U)
 ```
 
 ```{code-cell} ipython3
-U,P = polar(yule_q(X, pseudocts=0.5))
+U,P = polar(yule_q(X, pseudocts=psct))
 sns.heatmap(U)
 # U
 ```
@@ -1274,7 +1289,7 @@ sns.heatmap(-(_sq(_sq(np.round(np.array((struct.T@struct).todense())/(Xdf.T@Xdf)
 ```
 
 ```{code-cell} ipython3
-est_dists = bilinear_dists(sinkhorn(coocur_prob(X, pseudocts=0.5)))
+est_dists = bilinear_dists(sinkhorn(coocur_prob(X, pseudocts=psct)))
 
 # B_obs = sprs.vstack([
 #     (sparse_adj_to_incidence(minimum_spanning_tree(
@@ -1337,7 +1352,7 @@ def EM(data, expected_dists, expected_struct):
 ```
 
 ```{code-cell} ipython3
-em_gen = EM(papers.values, est_dists, edge_score_laplacian(_sq(ochiai(X, pseudocts=0.5))))
+em_gen = EM(papers.values, est_dists, edge_score_laplacian(_sq(ochiai(X, pseudocts=psct))))
 Q1,L1=next(em_gen)
 
 plt.subplot(121)
@@ -1359,7 +1374,7 @@ plt.spy(L, marker='x', alpha=0.4)
 ```
 
 ```{code-cell} ipython3
-ochiai_struct = edge_score_laplacian(_sq(ochiai(X, pseudocts=0.5)))
+ochiai_struct = edge_score_laplacian(_sq(ochiai(X, pseudocts=psct)))
 PrecisionRecallDisplay.from_predictions(true,-_sq(ochiai_struct), name='it=0')
 em_gen = EM(papers.values, est_dists, ochiai_struct)
 PrecisionRecallDisplay.from_predictions(true,-_sq(L1/(1-Q1)), name='it=1', ax=plt.gca())
@@ -1369,7 +1384,7 @@ PrecisionRecallDisplay.from_predictions(true,_sq(-Lk/ochiai_struct), name='it=10
 ```
 
 ```{code-cell} ipython3
-hinton((next(em_gen)[1])/(ochiai(X, pseudocts=0.5)))
+hinton((next(em_gen)[1])/(ochiai(X, pseudocts=psct)))
 ```
 
 ```{code-cell} ipython3

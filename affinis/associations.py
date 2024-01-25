@@ -30,9 +30,9 @@ def _gram(X1, X2):
 def coocur_prob(X, pseudocts=0.5):
     """probability of a co-ocurrence per-observation"""
 
-    cts = _gram(X, X) + pseudocts
-    tot = X.shape[0] + 2 * pseudocts
-    return pseudocount(pseudocounts)(cts, tot)
+    cts = _gram(X, X)
+    tot = X.shape[0]
+    return pseudocount(pseudocts)(cts, tot)
 
 
 # def cond_prob(X, pseudocts=0.):
@@ -68,7 +68,7 @@ def _contingency_cts(X):
 
 def _contingency_prob(X, pseudocts=0.5):
     psdct = pseudocount(pseudocts)
-    cts = np.vstack(_contingency_cts(X)) + pseudocts
+    cts = np.vstack(_contingency_cts(X))
     return [psdct(ct, X.shape[0]) for ct in cts]
 
 
@@ -254,7 +254,7 @@ def SFD_edge_cond_prob(X, prior_dists=None, pseudocts=0.5):
     """
     e_cts = _sq(SFD_interaction_cts(X, prior_dists=prior_dists))
     uv_cts = _sq(_gram(X, X))
-    e_prob = (e_cts + pseudocts) / (uv_cts + 2 * pseudocts)
+    # e_prob = (e_cts + pseudocts) / (uv_cts + 2 * pseudocts)
     e_prob = pseudocount(pseudocts)(e_cts, uv_cts)
     return _sq(e_prob)
 

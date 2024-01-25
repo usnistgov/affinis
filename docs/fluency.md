@@ -17,6 +17,13 @@ import pandas as pd
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
+import networkx as nx
+
+from affinis.filter import min_connected_filter
+import scipy.sparse as sprs
+from affinis.distance import bilinear_dists, generalized_graph_dists
+from affinis.proximity import sinkhorn, forest
+from affinis.utils import _norm_diag, edge_mask_to_laplacian, _outer
 # import matplotlib 
 # %matplotlib notebook
 ```
@@ -26,7 +33,6 @@ rng = np.random.default_rng(2)
 ```
 
 ```{code-cell} ipython3
-
 df = pd.read_csv('../data/snafu_sample.csv', dtype={'category':'category'})
 idlist=df.id.rename('idlist').str.cat(df.listnum.astype(str))
 df = df.assign(
@@ -44,7 +50,6 @@ df
 ```
 
 ```{code-cell} ipython3
-
 
 # idlist=df.id.str.cat(df.listnum.astype(str))
 # idlist
@@ -114,6 +119,10 @@ roll_X.shape
 from affinis.associations import ochiai, resource_project, chow_liu, coocur_prob
 from affinis.utils import _sq
 
+# X = all_X
+X = roll_X
+
+
 sns.histplot(_sq(ochiai(all_X, pseudocts=0.5)), stat='density')
 sns.histplot(_sq(ochiai(roll_X, pseudocts=0.5)), stat='density')
 # sns.displot(_sq(resource_project(X)))
@@ -127,16 +136,8 @@ nx.draw_networkx(G, pos=pos_tree, node_color='w')
 ```
 
 ```{code-cell} ipython3
-import networkx as nx
 
-from affinis.filter import min_connected_filter
-import scipy.sparse as sprs
-from affinis.distance import bilinear_dists, generalized_graph_dists
-from affinis.proximity import sinkhorn, forest
-from affinis.utils import _norm_diag, edge_mask_to_laplacian, _outer
 
-# X = all_X
-X = roll_X
 
 def top_tree_pct(x, mult=1):
     pct=np.percentile(_sq(x), 100-100*mult*2/x.shape[0])
@@ -173,7 +174,6 @@ nx.connected.is_connected(G)
 ```
 
 ```{code-cell} ipython3
-
 
 def get_mask(e_pmf,idx):
     return sprs.coo_array(_sq(e_pmf)*
@@ -219,7 +219,7 @@ from affinis.associations import high_salience_skeleton
 # hss = (E_obs.sum(axis=0)+0.5)/(E_obs.shape[0]+1)
 f,ax = plt.subplots(ncols=2, figsize=(12,4))
 # hss = (E_obs.T*(X.sum(axis=0)/X.shape[0])).T.sum(axis=0)
-hss = high_salience_skeleton(X, pseudocts=0.5)
+hss = high_salience_skeleton(X, pseudocts=('zero-sum','min-connect'))
 np.histogram(hss)
 sns.heatmap(sinkhorn(hss*ochiai(X)), ax=ax[0], square=True)
 sns.heatmap(sinkhorn(_sq(_sq(ochiai(X)))), ax=ax[1], square=True)
@@ -230,12 +230,11 @@ plt.tight_layout()
 ```
 
 ```{code-cell} ipython3
-
 plt.figure(figsize=(15,15))
 # G = nx.from_pandas_adjacency(pd.DataFrame(_sq(~min_connected_filter(_sq(sinkhorn(_sq(hss)*ochiai(X)))).mask), index=animals.columns, columns=animals.columns))
 
-G = nx.from_pandas_adjacency(pd.DataFrame(_sq(~min_connected_filter(_sq(hss)).mask), index=animals.columns, columns=animals.columns))
-# G = nx.from_pandas_adjacency(pd.DataFrame(_sq(hss>0.055), index=animals.columns, columns=animals.columns))
+G = nx.from_pandas_adjacency(pd.DataFrame(_sq(~min_connected_filter(_sq(sinkhorn(hss*ochiai(X)))).mask), index=animals.columns, columns=animals.columns))
+# G = nx.from_pandas_adjacency(pd.DataFrame(hss>0.05, index=animals.columns, columns=animals.columns))
 
 # pos_cos = nx.kamada_kawai_layout(G, dist = pd.DataFrame(-np.log(ochiai(X)), columns=animals.columns, index=animals.columns).to_dict())
 pos = nx.kamada_kawai_layout(G)
@@ -248,8 +247,8 @@ nx.connected.is_connected(G)
 ```{code-cell} ipython3
 from affinis.distance import adjusted_forest_dists
 
-from affinis.associations import SFD_edge_prob, SFD_interaction_prob
-evd_L = _sq(SFD_edge_prob(sprs.csr_array(X)))
+from affinis.associations import SFD_edge_cond_prob, SFD_interaction_prob
+evd_L = _sq(SFD_edge_cond_prob(sprs.csr_array(X), pseudocts=('zero-sum','min-connect')))
 # mst_post = evd_L*X.shape[0]
 post_L=evd_L*_sq(adjusted_forest_dists((lambda a: np.diag(a.sum(axis=0))-a)(_sq(evd_L)), beta=100))
 # post_L = _sq(spanning_forests_edge_rate(X))
@@ -265,7 +264,7 @@ $P(X) = P(X|Y)P(Y)$
 
 let X be "probability of an interraction" and Y be "probability of a co-occurrence", we can measure that right side via spanning tree bootstraps, to estimate the left. 
 
-Alternatively, if the co-occurrences are treated as rates (say, counts in a poisson or negative binomial), then we are alternatively deriving our estimate as the thinning parameter for each 
+Alternatively, if the co-occurrences are treated as rates (say, counts in a poisson or negative binomial), then we are alternatively deriving our estimate as the thinning parameter for each
 
 ```{code-cell} ipython3
 f = plt.figure(figsize=(15,15))
@@ -289,7 +288,6 @@ nx.draw_networkx(G, pos=pos, node_color='w')
 # list(G.neighbors('spider'))
 nx.connected.is_connected(G)
 # fig
-
 ```
 
 ```{code-cell} ipython3
@@ -383,6 +381,7 @@ E_obs = better_sfep(X)
 ```{code-cell} ipython3
 # (E_obs.T@E_obs)@(spX.T@E_obs).
 from affinis.utils import sparse_adj_to_incidence, _norm_diag
+from affinis.associations import _spanning_forests_obs_bootstrap
 # n1,n2 = np.triu(nx.adjacency_matrix(G).todense()).nonzero()#,_sq(np.triu_indices_from(X.T@X, k=1)[0])
 # e = np.ma.nonzero(_sq(nx.adjacency_matrix(G).todense()))[0]
 # B = sprs.coo_array((np.concatenate([ones:=np.ones(e.shape[0]),-ones]), (np.concatenate([e,e]),np.concatenate([n1,n2]))), shape=(_sq(nx.adjacency_matrix(G).todense()).shape[0], X.shape[1]))
@@ -391,7 +390,7 @@ def signif(x, p):
     x_positive = np.where(np.isfinite(x) & (x != 0), np.abs(x), 10**(p-1))
     mags = 10 ** (p - 1 - np.floor(np.log10(x_positive)))
     return np.round(x * mags) / mags
-
+E_obs = _spanning_forests_obs_bootstrap(X)
 n1, n2 = np.triu(_sq(evd_L)).nonzero()
 # print(n1.shape)
 e = np.ma.nonzero(evd_L)[0]
@@ -413,6 +412,14 @@ Xest=(E_obs@(np.abs(B))).toarray()
 # Xest=(E_obs@(B!=0)).astype(int)
 sns.histplot(_sq(Xest.T@Xest+1), log_scale=True)
 sns.histplot(_sq(X.T@X+1), log_scale=True)
+```
+
+```{code-cell} ipython3
+f,ax = plt.subplots(ncols=2, figsize=(12,4))
+sns.heatmap(Xest[:, np.lexsort(-(Xest>0).astype(int)[::-1])], ax=ax[0])
+sns.heatmap(X[:, np.lexsort(-X[::-1])], ax=ax[1])
+np.lexsort(-X[::-1])
+# np.argsort(Xest.sum(axis=0))
 ```
 
 ```{code-cell} ipython3
@@ -634,8 +641,6 @@ nt.from_nx(G)
 nt.show('nx.html')
 ```
 
-
-
 ```{code-cell} ipython3
 Graph(
     K, 
@@ -751,7 +756,6 @@ nbinom(7, 0.5).mean(), unroll_node_obs(X).sum(axis=0).mean()/X.shape[0]
 # sns.histplot((E_obs.sum(axis=0)+0.5)/(unroll_node_obs(X).sum(axis=0)+1), stat='density')
 # (unroll_node_obs(X).astype(bool)).shape, E_obs.shape
 # plt.yscale('log')
-
 ```
 
 ```{code-cell} ipython3
@@ -804,7 +808,6 @@ sns.histplot(post_L/_sq(ochiai(X, pseudocts=0.5)), log_scale=True)
 ```
 
 ```{code-cell} ipython3
-
 # matplotlib.use('nbagg')
 
 from netgraph import Graph, InteractiveGraph, EditableGraph
