@@ -187,7 +187,7 @@ def resource_project(X):
     return np.maximum(P, P.T)
 
 
-def high_salience_skeleton(X, prior=ochiai, pseudocts=0.5):
+def high_salience_skeleton(X, prior=ochiai, pseudocts="min-connect"):
     """Grady et al. (2012)
     Calculates shortest paths from every node, and counts the
     number of trees each edge ended up being used in.
@@ -247,7 +247,7 @@ def SFD_interaction_cts(X, prior_dists=None):
     # (E_obs.sum(axis=0)+0.5)*_sq(coocur_prob(X, pseudocts=0.5))/_sq(X.T@X+1)
 
 
-def SFD_edge_cond_prob(X, prior_dists=None, pseudocts=0.5):
+def SFD_edge_cond_prob(X, prior_dists=None, pseudocts="min-connect"):
     """point estimate for edge-activation probability, conditional on
     both nodes being a priori activated.
     Uses the Spanning Forest Density non-parametric estimator
