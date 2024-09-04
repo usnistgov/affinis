@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "affinis"
-version = "0.4.1"
+version = "0.4.2"
 description = ""
 authors = ["Rachael Sexton <rtbs@nist.gov>"]
 
@@ -16,6 +16,7 @@ scipy = "^1.10"
 awkward = "^2.3.3"
 awkward-pandas = "^2023.8.0"
 plum-dispatch = "^2.2.2"
+jaxtyping = "^0.2.25"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^5.2"
@@ -41,6 +42,10 @@ zarr = "^2.16.1"
 csrgraph = "^0.1.28"
 coconut = {extras=["kernel"], version= "^3.0.4"}
 yappi = "^1.6.0"
+sparse = "^0.15.1"
+xarray-dataclasses = "^1.7.0"
+opt-einsum = "^3.3.0"
+nist-gmd = {path = "../graph-recovery-dataset"}
 
 
 [build-system]

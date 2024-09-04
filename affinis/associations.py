@@ -53,8 +53,10 @@ def _marginal_cts(X):
     return X.sum(axis=0), _not(X).sum(axis=0)
 
 
-def _marginal_prob(X):
-    return [ct / X.shape[0] for ct in _marginal_cts(X)]
+def _marginal_prob(X, pseudocts=0.5):
+    # psdct = pseudocount(pseudocts)  #TODO cannot use _sq(num) when num is 1D!!
+    # return [psdct(ct, X.shape[0]) for ct in _marginal_cts(X)]
+    return [(ct + pseudocts) / (X.shape[0] + 2 * pseudocts) for ct in _marginal_cts(X)]
 
 
 def _contingency_cts(X):
@@ -102,6 +104,7 @@ def mutual_information(X, pseudocts=0.5):
 
     # Pxy = np.vstack([sq(i) for i in cond_table])
     yes, no = _marginal_prob(X)
+    # TODO had to hard-code 0.5 for now :(, pseudocts=pseudocts)
 
     # print(Pxy.sum(axis=1))
     PxPy = np.vstack(
@@ -177,14 +180,32 @@ def binary_cosine_similarity(X, pseudocts=0.5):
     return ochiai(X, pseudocts=pseudocts)
 
 
-def resource_project(X):
+def resource_project(X, pseudocts=0.5, sym_func=np.maximum):
     """bipartite project due to Zhao et al.
 
     Really just a step of sinkhorn-knopp on the bipartite adjacency
     https://doc.rero.ch/record/8503/files/zhang_bnp.pdf
+
+    For additive smoothing to work, we assume no smoothing is needed
+    for the "forward" projection (agents->artifacts), since we assume
+    no artifact has 0 agent participation, while some known agents may
+    have 0 (observed) artifact participation.
+
+    by default, we symmetrize with "maximum", meaning that association is
+    considered as the strongest of the directions it could take. This
+    can be overridden with any function of two same-shaped arrays.
     """
-    P = _gram(((X.T) / (X.sum(axis=1))).T, ((X) / (X.sum(axis=0))))
-    return np.maximum(P, P.T)
+    psdct_func = pseudocount(pseudocts)
+
+    fwd = (X.T / X.sum(axis=1)).T  # right-stochastic bipartite
+    # bwd = psdct_func(X, X.sum(axis=0))
+
+    # P = _gram(((X.T) / (X.sum(axis=1))).T, ((X) / (X.sum(axis=0))))
+    num = _gram(X, fwd)  # project back
+    # den = np.multiply.outer(X.sum(axis=0), np.ones(X.shape[1]))
+    den = X.sum(axis=0)  # normalized by node occurrences (bipartite degree)
+    P = psdct_func(num, den)
+    return sym_func(P, P.T)
 
 
 def high_salience_skeleton(X, prior=ochiai, pseudocts="min-connect"):
@@ -211,7 +232,7 @@ def high_salience_skeleton(X, prior=ochiai, pseudocts="min-connect"):
 
 def _spanning_forests_obs_bootstrap(X, prior_dists=None):
     """resample with a kernel bootstrap on MSTs in a manifold"""
-    if not prior_dists:
+    if prior_dists is None:
         prior_dists = -np.log(ochiai(X, pseudocts=0.5))
 
     N_obs = X.toarray() if issparse(X) else X
@@ -259,17 +280,25 @@ def SFD_edge_cond_prob(X, prior_dists=None, pseudocts="min-connect"):
     return _sq(e_prob)
 
 
-def SFD_interaction_prob(X, prior_dists=None, pseudocts=0.5):
+def SFD_interaction_prob(
+    X, prior_dists=None, precalc_prob=None, pseudocts="min-connect"
+):
     """point estimate for edge-activation probability using the
     Spanning Forest Density non-parametric estimator
+    TODO check X and precalc_cts have correct dim
     """
-    e_prob = _sq(SFD_edge_cond_prob(X, prior_dists=prior_dists, pseudocts=pseudocts))
+    if not precalc_prob:
+        e_prob = _sq(
+            SFD_edge_cond_prob(X, prior_dists=prior_dists, pseudocts=pseudocts)
+        )
+    else:
+        e_prob = _sq(precalc_prob)
     uv_prob = _sq(coocur_prob(X, pseudocts=pseudocts))
     e_margP = e_prob * uv_prob
     return _sq(e_margP)
 
 
-def SFD_edge_prob(X, prior_dists=None, pseudocts=0.5):
+def SFD_edge_prob(X, prior_dists=None, pseudocts="min-connect"):
     """re-scaling of SFD Interraction probability that tends to
     move the highest-probability edges for each node toward 1.0.
 

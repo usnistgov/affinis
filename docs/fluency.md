@@ -50,7 +50,6 @@ df
 ```
 
 ```{code-cell} ipython3
-
 # idlist=df.id.str.cat(df.listnum.astype(str))
 # idlist
 animals = (df
@@ -136,15 +135,12 @@ nx.draw_networkx(G, pos=pos_tree, node_color='w')
 ```
 
 ```{code-cell} ipython3
-
-
-
 def top_tree_pct(x, mult=1):
     pct=np.percentile(_sq(x), 100-100*mult*2/x.shape[0])
     print(pct)
     return x>=pct
 plt.figure(figsize=(15,15))
-G = nx.from_pandas_adjacency(pd.DataFrame(_sq(~(min_connected_filter(_sq(sinkhorn(_sq(_sq(X.T@X))))).mask)), index=animals.columns, columns=animals.columns))
+G = nx.from_pandas_adjacency(pd.DataFrame(_sq(~(min_connected_filter(_sq(sinkhorn(coocur_prob(X)))).mask)), index=animals.columns, columns=animals.columns))
 # pos_cos = nx.kamada_kawai_layout(G, dist = pd.DataFrame(-np.log(ochiai(X)), columns=animals.columns, index=animals.columns).to_dict())
 pos_cos = nx.kamada_kawai_layout(G)
 nx.draw_networkx(G, pos=pos_cos, node_color='w')
@@ -153,15 +149,21 @@ nx.connected.is_connected(G)
 
 ```{code-cell} ipython3
 from sklearn.covariance import GraphicalLasso, GraphicalLassoCV
+from affinis.associations import coocur_prob
 # graphical_lasso()
 plt.figure(figsize=(15,15))
-glasso = (lambda o: o/(1+o))(np.abs(
+glasso = (-(
     _sq(
-        GraphicalLassoCV()#covariance='precomputed')
-        # .fit(ochiai(X))
+        GraphicalLasso( 
+            alpha=0.001,
+            # covariance='precomputed',
+        )
         .fit(X)
+        # .fit(coocur_prob(X))
         .get_precision()
 )))
+
+
 G = nx.from_pandas_adjacency(pd.DataFrame(_sq(~min_connected_filter(glasso).mask), index=animals.columns, columns=animals.columns))
 # pos_cos = nx.kamada_kawai_layout(G, dist = pd.DataFrame(-np.log(ochiai(X)), columns=animals.columns, index=animals.columns).to_dict())
 pos = nx.kamada_kawai_layout(G)
@@ -174,7 +176,6 @@ nx.connected.is_connected(G)
 ```
 
 ```{code-cell} ipython3
-
 def get_mask(e_pmf,idx):
     return sprs.coo_array(_sq(e_pmf)*
                           np.multiply.outer(idx,idx))
@@ -232,8 +233,9 @@ plt.tight_layout()
 ```{code-cell} ipython3
 plt.figure(figsize=(15,15))
 # G = nx.from_pandas_adjacency(pd.DataFrame(_sq(~min_connected_filter(_sq(sinkhorn(_sq(hss)*ochiai(X)))).mask), index=animals.columns, columns=animals.columns))
+G = nx.from_pandas_adjacency(pd.DataFrame(_sq(~min_connected_filter(_sq(hss)).mask), index=animals.columns, columns=animals.columns))
 
-G = nx.from_pandas_adjacency(pd.DataFrame(_sq(~min_connected_filter(_sq(sinkhorn(hss*ochiai(X)))).mask), index=animals.columns, columns=animals.columns))
+# G = nx.from_pandas_adjacency(pd.DataFrame(_sq(~min_connected_filter(_sq(sinkhorn(hss*ochiai(X)))).mask), index=animals.columns, columns=animals.columns))
 # G = nx.from_pandas_adjacency(pd.DataFrame(hss>0.05, index=animals.columns, columns=animals.columns))
 
 # pos_cos = nx.kamada_kawai_layout(G, dist = pd.DataFrame(-np.log(ochiai(X)), columns=animals.columns, index=animals.columns).to_dict())
@@ -288,6 +290,135 @@ nx.draw_networkx(G, pos=pos, node_color='w')
 # list(G.neighbors('spider'))
 nx.connected.is_connected(G)
 # fig
+```
+
+```{code-cell} ipython3
+# (E_obs.T@E_obs)@(spX.T@E_obs).
+from affinis.utils import sparse_adj_to_incidence, _norm_diag
+from affinis.associations import _spanning_forests_obs_bootstrap
+# n1,n2 = np.triu(nx.adjacency_matrix(G).todense()).nonzero()#,_sq(np.triu_indices_from(X.T@X, k=1)[0])
+# e = np.ma.nonzero(_sq(nx.adjacency_matrix(G).todense()))[0]
+# B = sprs.coo_array((np.concatenate([ones:=np.ones(e.shape[0]),-ones]), (np.concatenate([e,e]),np.concatenate([n1,n2]))), shape=(_sq(nx.adjacency_matrix(G).todense()).shape[0], X.shape[1]))
+def signif(x, p):
+    x = np.asarray(x)
+    x_positive = np.where(np.isfinite(x) & (x != 0), np.abs(x), 10**(p-1))
+    mags = 10 ** (p - 1 - np.floor(np.log10(x_positive)))
+    return np.round(x * mags) / mags
+E_obs = _spanning_forests_obs_bootstrap(X)
+n1, n2 = np.triu(_sq(evd_L)).nonzero()
+# print(n1.shape)
+e = np.ma.nonzero(evd_L)[0]
+print(e.shape, n1.shape, n2.shape)
+B = sprs.coo_array((np.concatenate([evd_L, -evd_L]), (np.concatenate([e,e]),np.concatenate([n1,n2]))), shape=(e.shape[0], X.shape[1]))
+
+# np.diag((B.T@B).toarray())==np.diag(nx.laplacian_matrix(G).toarray()).round(1)
+Xest=(E_obs@(np.abs(B))).toarray()
+
+# ((np.abs(B).T@E_obs.T>0).T.toarray().astype(int)!=X.astype(int)).sum(axis=0)
+# _norm_diag((B.T@B).toarray())
+```
+
+```{code-cell} ipython3
+f,ax = plt.subplots(ncols=2, figsize=(12,4))
+sns.heatmap(Xest[:, np.lexsort(-(Xest>0).astype(int)[::-1])], ax=ax[0])
+sns.heatmap(X[:, np.lexsort(-X[::-1])], ax=ax[1])
+np.lexsort(-X[::-1])
+# np.argsort(Xest.sum(axis=0))
+```
+
+```{code-cell} ipython3
+# sns.heatmap(ochiai(X))
+f,ax = plt.subplots(ncols=2, figsize=(12,4))
+sns.heatmap(_sq(_sq(X.T@X)), ax=ax[0], square=True)
+sns.heatmap(_sq(_sq(Xest.T@Xest)), ax=ax[1], square=True)
+plt.tight_layout()
+```
+
+```{code-cell} ipython3
+# sns.heatmap(np.cov(Xest))
+sns.heatmap(_sq(min_connected_filter(_sq(sinkhorn(_sq(_sq(ochiai(Xest)))))).filled(0)))
+# sns.heatmap(_sq(min_connected_filter(_sq(ochiai(Xest))).filled(0)))
+```
+
+```{code-cell} ipython3
+# _sq(np.diag((E_obs.astype(int).T@E_obs).toarray()))
+
+# _sq(E_obs.sum(axis=0))
+
+# Xest=(E_obs@(B!=0)).astype(int)
+sns.histplot(_sq(coocur_prob(Xest)), log_scale=True)
+sns.histplot(_sq(coocur_prob(X)), log_scale=True)
+```
+
+```{code-cell} ipython3
+f = plt.figure(figsize=(15,15))
+
+# G = nx.from_pandas_adjacency(pd.DataFrame((minmax(sinkhorn(_sq(post_L)))>0.7).astype(int), index=animals.columns, columns=animals.columns))
+# G = nx.from_pandas_adjacency(pd.DataFrame(_sq(_sq(top_tree_pct(_sq(post_L), mult=1.5))), index=animals.columns, columns=animals.columns))
+
+
+Gest = min_connected_filter(_sq(sinkhorn(coocur_prob(Xest))))
+G = nx.from_pandas_adjacency(pd.DataFrame(_sq(Gest.filled(0)), index=animals.columns, columns=animals.columns))
+#
+pos = nx.kamada_kawai_layout(G)
+nx.draw_networkx(G, pos=pos, node_color='w')
+# nx.draw_networkx_edges(G, pos=pos_cos)
+# nx.draw_networkx_labels(G, pos=pos_cos, bbox = dict(facecolor = "xkcd:cement", edgecolor=None, joinstyle='round'))
+# plt.savefig('animals.svg')
+# list(G.neighbors('spider'))
+nx.connected.is_connected(G)
+```
+
+```{code-cell} ipython3
+f = plt.figure(figsize=(15,15))
+
+# G = nx.from_pandas_adjacency(pd.DataFrame((minmax(sinkhorn(_sq(post_L)))>0.7).astype(int), index=animals.columns, columns=animals.columns))
+# G = nx.from_pandas_adjacency(pd.DataFrame(_sq(_sq(top_tree_pct(_sq(post_L), mult=1.5))), index=animals.columns, columns=animals.columns))
+glasso = (np.abs(
+    _sq(
+        GraphicalLasso( alpha=0.001)
+        # .fit(ochiai(X))
+        .fit(Xest)
+        .get_precision()
+)))
+
+# Gest = min_connected_filter(_sq(glasso))
+G = nx.from_pandas_adjacency(pd.DataFrame(_sq(~min_connected_filter(glasso).mask), index=animals.columns, columns=animals.columns))
+#
+pos = nx.kamada_kawai_layout(G)
+nx.draw_networkx(G, pos=pos, node_color='w')
+# nx.draw_networkx_edges(G, pos=pos_cos)
+# nx.draw_networkx_labels(G, pos=pos_cos, bbox = dict(facecolor = "xkcd:cement", edgecolor=None, joinstyle='round'))
+# plt.savefig('animals.svg')
+# list(G.neighbors('spider'))
+nx.connected.is_connected(G)
+```
+
+```{code-cell} ipython3
+(1-np.corrcoef(Xest.T))
+```
+
+```{code-cell} ipython3
+1-np.corrcoef(Xest.T)
+```
+
+```{code-cell} ipython3
+f = plt.figure(figsize=(15,15))
+
+# G = nx.from_pandas_adjacency(pd.DataFrame((minmax(sinkhorn(_sq(post_L)))>0.7).astype(int), index=animals.columns, columns=animals.columns))
+# G = nx.from_pandas_adjacency(pd.DataFrame(_sq(_sq(top_tree_pct(_sq(post_L), mult=1.5))), index=animals.columns, columns=animals.columns))
+
+
+Gest = min_connected_filter(_sq(SFD_edge_cond_prob(X, prior_dists=1-np.corrcoef(Xest.T))))
+G = nx.from_pandas_adjacency(pd.DataFrame(_sq(~Gest.mask), index=animals.columns, columns=animals.columns))
+#
+pos = nx.kamada_kawai_layout(G)
+nx.draw_networkx(G, pos=pos, node_color='w')
+# nx.draw_networkx_edges(G, pos=pos_cos)
+# nx.draw_networkx_labels(G, pos=pos_cos, bbox = dict(facecolor = "xkcd:cement", edgecolor=None, joinstyle='round'))
+# plt.savefig('animals.svg')
+# list(G.neighbors('spider'))
+nx.connected.is_connected(G)
 ```
 
 ```{code-cell} ipython3
@@ -376,95 +507,6 @@ def better_sfep(X, prior=ochiai, pseudocts=0.5):
     # return row_col
 E_obs = better_sfep(X)
 # E_obs
-```
-
-```{code-cell} ipython3
-# (E_obs.T@E_obs)@(spX.T@E_obs).
-from affinis.utils import sparse_adj_to_incidence, _norm_diag
-from affinis.associations import _spanning_forests_obs_bootstrap
-# n1,n2 = np.triu(nx.adjacency_matrix(G).todense()).nonzero()#,_sq(np.triu_indices_from(X.T@X, k=1)[0])
-# e = np.ma.nonzero(_sq(nx.adjacency_matrix(G).todense()))[0]
-# B = sprs.coo_array((np.concatenate([ones:=np.ones(e.shape[0]),-ones]), (np.concatenate([e,e]),np.concatenate([n1,n2]))), shape=(_sq(nx.adjacency_matrix(G).todense()).shape[0], X.shape[1]))
-def signif(x, p):
-    x = np.asarray(x)
-    x_positive = np.where(np.isfinite(x) & (x != 0), np.abs(x), 10**(p-1))
-    mags = 10 ** (p - 1 - np.floor(np.log10(x_positive)))
-    return np.round(x * mags) / mags
-E_obs = _spanning_forests_obs_bootstrap(X)
-n1, n2 = np.triu(_sq(evd_L)).nonzero()
-# print(n1.shape)
-e = np.ma.nonzero(evd_L)[0]
-print(e.shape, n1.shape, n2.shape)
-B = sprs.coo_array((np.concatenate([evd_L, -evd_L]), (np.concatenate([e,e]),np.concatenate([n1,n2]))), shape=(e.shape[0], X.shape[1]))
-
-# np.diag((B.T@B).toarray())==np.diag(nx.laplacian_matrix(G).toarray()).round(1)
-Xest=(E_obs@(np.abs(B))).toarray()
-
-# ((np.abs(B).T@E_obs.T>0).T.toarray().astype(int)!=X.astype(int)).sum(axis=0)
-# _norm_diag((B.T@B).toarray())
-```
-
-```{code-cell} ipython3
-# _sq(np.diag((E_obs.astype(int).T@E_obs).toarray()))
-
-# _sq(E_obs.sum(axis=0))
-
-# Xest=(E_obs@(B!=0)).astype(int)
-sns.histplot(_sq(Xest.T@Xest+1), log_scale=True)
-sns.histplot(_sq(X.T@X+1), log_scale=True)
-```
-
-```{code-cell} ipython3
-f,ax = plt.subplots(ncols=2, figsize=(12,4))
-sns.heatmap(Xest[:, np.lexsort(-(Xest>0).astype(int)[::-1])], ax=ax[0])
-sns.heatmap(X[:, np.lexsort(-X[::-1])], ax=ax[1])
-np.lexsort(-X[::-1])
-# np.argsort(Xest.sum(axis=0))
-```
-
-```{code-cell} ipython3
-# sns.heatmap(ochiai(X))
-f,ax = plt.subplots(ncols=2, figsize=(12,4))
-sns.heatmap(_sq(_sq(X.T@X)), ax=ax[0], square=True)
-sns.heatmap(_sq(_sq(Xest.T@Xest)), ax=ax[1], square=True)
-plt.tight_layout()
-```
-
-```{code-cell} ipython3
-# sns.heatmap(np.cov(Xest))
-sns.heatmap(_sq(min_connected_filter(_sq(sinkhorn(_sq(_sq(ochiai(Xest)))))).filled(0)))
-# sns.heatmap(_sq(min_connected_filter(_sq(ochiai(Xest))).filled(0)))
-```
-
-```{code-cell} ipython3
-# spanning_forests_edge_prob(Xest>)
-# sns.histplot(np.ma.masked_less_equal(Xest, 0).flatten())
-
-# E_obs
-```
-
-```{code-cell} ipython3
-f = plt.figure(figsize=(15,15))
-
-# G = nx.from_pandas_adjacency(pd.DataFrame((minmax(sinkhorn(_sq(post_L)))>0.7).astype(int), index=animals.columns, columns=animals.columns))
-# G = nx.from_pandas_adjacency(pd.DataFrame(_sq(_sq(top_tree_pct(_sq(post_L), mult=1.5))), index=animals.columns, columns=animals.columns))
-Gest = min_connected_filter(_sq(sinkhorn(_sq(_sq(Xest.T@Xest)))))
-G = nx.from_pandas_adjacency(pd.DataFrame(_sq(Gest.filled(0)), index=animals.columns, columns=animals.columns))
-# Gneg = nx.from_pandas_adjacency(pd.DataFrame(
-#     _sq(3*(threshold_edges_filter(_sq(Gvals), 0.9) - Gthres.min()).filled(0) + 0.5*Gthres.filled(0)),
-#     index = animals.columns, columns = animals.columns,
-# ))
-# pos = nx.kamada_kawai_layout(G, dist=pd.DataFrame(1-ochiai(Xest), columns=animals.columns, index=animals.columns).to_dict())
-pos = nx.kamada_kawai_layout(G)
-# pos = nx.spring_layout(G, iterations=1000, k=2)
-
-nx.draw_networkx(G, pos=pos, node_color='w')
-# nx.draw_networkx_edges(G, pos=pos_cos)
-# mx.
-# nx.draw_networkx_labels(G, pos=pos_cos, bbox = dict(facecolor = "xkcd:cement", edgecolor=None, joinstyle='round'))
-# plt.savefig('animals.svg')
-# list(G.neighbors('spider'))
-nx.connected.is_connected(G)
 ```
 
 ```{code-cell} ipython3

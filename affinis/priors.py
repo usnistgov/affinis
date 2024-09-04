@@ -1,15 +1,17 @@
 #!/usr/bin/env python3
 from plum import dispatch
 from numbers import Number
-from typing import Callable, Literal
+from typing import Callable, Literal, TypeAlias
 import numpy as np
-from numpy.typing import NDArray as AL
+from jaxtyping import Num
 from affinis.utils import _sq
 
-ElemReduceFunc = Callable[[AL, AL], AL]
+ElemWise: TypeAlias = Num[np.ndarray, "*elems"]
+
+ElemReduceFunc: TypeAlias = Callable[[ElemWise, ElemWise], ElemWise]
 
 
-def _safe_div(num: AL, den: AL) -> AL:
+def _safe_div(num: ElemWise, den: ElemWise) -> ElemWise:
     return np.divide(
         num,
         den,
@@ -42,7 +44,7 @@ def pseudocount(prior: Number) -> ElemReduceFunc:
     ---
     """
 
-    def _beta_binom_post(num: AL, den: AL) -> AL:
+    def _beta_binom_post(num: ElemWise, den: ElemWise) -> ElemWise:
         return _safe_div(
             num + prior,
             den + 2 * prior,
@@ -56,7 +58,7 @@ def pseudocount(prior: tuple[Number, Number]) -> ElemReduceFunc:
     """additive smoothing binomial with (possibly) asymmetric prior"""
     a, b = prior
 
-    def _beta_binom_post(num: AL, den: AL) -> AL:
+    def _beta_binom_post(num: ElemWise, den: ElemWise) -> ElemWise:
         return _safe_div(num + a, den + a + b)
 
     return _beta_binom_post
@@ -82,8 +84,10 @@ def pseudocount(prior: Literal["min-connect"]) -> ElemReduceFunc:
     This comes out to `a=2/n, b=1-2/n`, so the P(p|a,b) = (succ+2/n)/(trials+1)
     """
 
-    def _beta_binom_post(num: AL, den: AL) -> AL:
+    def _beta_binom_post(num: ElemWise, den: ElemWise) -> ElemWise:
         n = _sq(num).shape[0]
+        # n_nodes = num.shape[1]
+        # n_pairs = n_nodes * (n_nodes - 1) / 2.0
         return _safe_div(num + 2.0 / n, den + 1.0)
 
     return _beta_binom_post
@@ -91,15 +95,23 @@ def pseudocount(prior: Literal["min-connect"]) -> ElemReduceFunc:
 
 @dispatch
 def pseudocount(prior: tuple[Literal["zero-sum"], Number]) -> ElemReduceFunc:
-    """TODO derive the approx-cts for projection onto simplex"""
-    a = prior[1]
-    b = 1 - a
+    """TODO derive the approx-cts for projection onto simplex
 
-    def _beta_binom_post(suc: AL, tot: AL) -> AL:
+    unlike the other methods, this directly returns the $\alpha$ values for
+    a $\text{Beta}(\alpha, 1-\alpha)$ distribution. For use when the full
+    Beta distribution is desired e.g. for active learning or uncertainty.
+
+    (it turns out that a/(a+1-a) == a, so this is also the mean of the distribution)
+    """
+    a = prior[1]
+    # b = 1 - a
+
+    def _beta_binom_post(suc: ElemWise, tot: ElemWise) -> ElemWise:
         c = (suc - a * tot) / (tot + 1)
         a_n = a + c
-        b_n = 1 - a_n
-        return _safe_div(a_n, a_n + b_n)
+        # b_n = 1 - a_n
+        return a_n
+        # return _safe_div(a_n, a_n + b_n)
 
     return _beta_binom_post
 
@@ -110,13 +122,14 @@ def pseudocount(
 ) -> ElemReduceFunc:
     """A combination of a zero-sum (a, 1-a) beta prior and a=2/n for tree-like"""
 
-    def _beta_binom_post(suc: AL, tot: AL) -> AL:
+    def _beta_binom_post(suc: ElemWise, tot: ElemWise) -> ElemWise:
         n = _sq(suc).shape[0]
         a = 2 / n
-        b = 1 - a
+        # b = 1 - a
         c = (suc - a * tot) / (tot + 1)
         a_n = a + c
-        b_n = 1 - a_n
-        return _safe_div(a_n, a_n + b_n)
+        # b_n = 1 - a_n
+        # return _safe_div(a_n, a_n + b_n)
+        return a_n
 
     return _beta_binom_post
