@@ -20,7 +20,7 @@ pages:
   stage: deploy
   image: busybox:latest
   script:
-    - mv _build/html public
+    - mv manual/_build/html public
   artifacts:
     paths:
       - public
