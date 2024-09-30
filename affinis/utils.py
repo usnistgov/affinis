@@ -2,7 +2,7 @@ from functools import cache
 from typing import Callable, TypeAlias
 
 import numpy as np
-from bidict import frozenbidict
+# from bidict import frozenbidict
 from scipy.linalg import lapack
 from scipy.sparse import coo_array, dok_array
 from jaxtyping import Int
@@ -54,9 +54,9 @@ def _std_vec(n: int, i: int):
     return np.eye(n)[i]
 
 
-@cache
-def _map_edge_to_nodes(n: int):
-    return frozenbidict(enumerate(zip(*[list(i) for i in np.triu_indices(n, k=1)])))
+# @cache
+# def _map_edge_to_nodes(n: int):
+#     return frozenbidict(enumerate(zip(*[list(i) for i in np.triu_indices(n, k=1)])))
 
 
 def sq_e_ij(n: int, e: Idx) -> tuple[Idx, Idx]:
@@ -177,11 +177,11 @@ def _std_incidence_vec(n: int, ij: tuple[int, int]):
     return _std_vec(n, ij[1]) - _std_vec(n, ij[0])
 
 
-@cache
-def _map_edge_to_stdvec(n: int):
-    return frozenbidict(
-        {e: tuple(_std_incidence_vec(n, ij)) for e, ij in _map_edge_to_nodes(n).items()}
-    )
+# @cache
+# def _map_edge_to_stdvec(n: int):
+#     return frozenbidict(
+#         {e: tuple(_std_incidence_vec(n, ij)) for e, ij in _map_edge_to_nodes(n).items()}
+#     )
 
 
 def sparse_adj_to_incidence(A):

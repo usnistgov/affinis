@@ -6,26 +6,18 @@ authors = ["Rachael Sexton <rtbs@nist.gov>"]
 
 [tool.poetry.dependencies]
 python = ">=3.10,<3.13"
-pandas = ">=1.5.3"
-networkx = ">=3"
-scikit-learn = "^1.2.0"
-toolz = "^0.12.0"
-intervaltree = "^3.1.0"
-bidict = "^0.22.1"
 scipy = "^1.10"
-awkward = "^2.3.3"
-awkward-pandas = "^2023.8.0"
 plum-dispatch = "^2.2.2"
 jaxtyping = "^0.2.25"
 sparse = "^0.15.4"
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^5.2"
 ipykernel = "^6.9.2"
 seaborn = "^0.12.1"
 black = "^23.3.0"
 ruff = "^0.1"
-
+pytest = "^8.3.3"
+toolz = "^0.12.0"
 
 [tool.poetry.group.docs.dependencies]
 pydlc = "^0.2"
@@ -34,20 +26,9 @@ netgraph = "^4.12.11"
 pyvis = "^0.3.2"
 jupyter-book = "^1.0.2"
 sphinx-autodoc-typehints = "<2.4.0"
-
-
-[tool.poetry.group.experiments.dependencies]
-cython = "^3.0.5"
-dvc = "^3.29.0"
-typer = { extras = ["all"], version = "^0.9.0" }
-binsparse = { git = "https://github.com/ivirshup/binsparse-python.git", rev = "main" }
-zarr = "^2.16.1"
-csrgraph = "^0.1.28"
-coconut = {extras=["kernel"], version= "^3.0.4"}
-yappi = "^1.6.0"
-xarray-dataclasses = "^1.7.0"
-opt-einsum = "^3.3.0"
-
+scikit-learn = "^1.2.0"
+pandas = ">=1.5.3"
+networkx = ">=3"
 
 [build-system]
 requires = ["poetry>=0.12"]
