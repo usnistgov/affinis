@@ -1,0 +1,63 @@
+# Book settings
+# Learn more at https://jupyterbook.org/customize/config.html
+
+title: "Library Reference: Affinis"
+author: Rachael Sexton, NIST EL SID
+logo: logo.png
+
+only_build_toc_files: true
+# Force re-execution of notebooks on each build.
+# See https://jupyterbook.org/content/execute.html
+execute:
+  execute_notebooks: false
+
+# Define the name of the latex output file for PDF builds
+latex:
+  latex_engine: tectonic
+  latex_documents:
+    targetname: book.tex
+
+# Add a bibtex file so that we can create citations
+bibtex_bibfiles:
+  - references.bib
+
+# Information about where the book exists on the web
+repository:
+  url: https://github.com/executablebooks/jupyter-book  # Online location of your book
+  path_to_book: manual # Optional path to your book, relative to the repository root
+  branch: main  # Which branch of the repository should be used when creating links (optional)
+
+# Add GitHub buttons to your book
+# See https://jupyterbook.org/customize/config.html#add-a-link-to-your-repository
+html:
+  use_issues_button: true
+  use_repository_button: true
+
+
+sphinx:
+  extra_extensions:
+  - 'sphinx.ext.autodoc'
+  - 'sphinx.ext.napoleon'
+  - 'sphinx.ext.viewcode'
+  # - 'sphinx_autodoc_typehints'
+  config: 
+    add_module_names: false
+    # napoleon_use_param: true
+    # napoleon_preprocess_types: true 
+    autodoc_type_aliases: 
+      FeatMat: 'FeatMat'
+      SimsMat: 'SimsMat'
+      PsdCts: 'PsdCts'
+      Elemwise: 'Elemwise'
+      ElemwiseReduceFunc: 'ElemwiseReduceFunc'
+    autodoc_typehints: 'description'
+    python_use_unqualified_type_names: true
+    latex_toplevel_sectioning: 'section'
+    html_theme_options: 
+      home_page_in_toc: true
+      logo:
+        image_light: logo.png
+        image_dark: logo-dark.png
+parse:
+  myst_enable_extensions: 
+    - dollarmath
