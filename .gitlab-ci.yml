@@ -9,7 +9,7 @@ stages:
 
 jupyter-build:
   stage: build
-  image: python:slim
+  image: python:3.11
   script:
     - jupyter-book clean manual
     - jupyter-book build manual
