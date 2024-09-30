@@ -1,15 +1,17 @@
-#!/usr/bin/env python3
+from __future__ import annotations
 from plum import dispatch
-from numbers import Number
+# from numbers import Number
 from typing import Callable, Literal, TypeAlias
 import numpy as np
 from jaxtyping import Num
 from affinis.utils import _sq
 
+Number: TypeAlias = float | int
 ElemWise: TypeAlias = Num[np.ndarray, "*elems"]
-
 ElemReduceFunc: TypeAlias = Callable[[ElemWise, ElemWise], ElemWise]
 
+PsdCtOpts:TypeAlias = Literal["min-connect","zero-sum"]
+PsdCts: TypeAlias = tuple[Number, Number] | tuple[PsdCtOpts, Number] | PsdCtOpts | Number
 
 def _safe_div(num: ElemWise, den: ElemWise) -> ElemWise:
     return np.divide(
@@ -22,7 +24,7 @@ def _safe_div(num: ElemWise, den: ElemWise) -> ElemWise:
 
 @dispatch.abstract
 def pseudocount(
-    prior: tuple[Number, Number] | tuple[str, Number] | str | Number
+    prior: PsdCts
 ) -> ElemReduceFunc:
     """Additive binomial smoothing via beta prior (beta-binomial)"""
     ...
@@ -30,20 +32,20 @@ def pseudocount(
 
 @dispatch
 def pseudocount(prior: Number) -> ElemReduceFunc:
-    """additiv smoothing binomial with symmetric beta prior
+    """additiv smoothing binomial with symmetric beta prior (a = b) 
+    
+    Common cases for a:
+    
+    - Haldane: \t 0.
+    - Laplace: \t 1.
+    - Jeffreys: \t 0.5
 
-    \\alpha == \\beta == prior
+    Args:
+      prior:  
 
-    Common cases
-    ---
-    |prior | \\alpha|
-    | - | - |
-    |Haldane | 0.|
-    |Laplace | 1.|
-    |Jeffreys | 0.5|
-    ---
-    """
+    Returns: callable combining numerator and denominator 
 
+    """    
     def _beta_binom_post(num: ElemWise, den: ElemWise) -> ElemWise:
         return _safe_div(
             num + prior,
@@ -55,7 +57,14 @@ def pseudocount(prior: Number) -> ElemReduceFunc:
 
 @dispatch
 def pseudocount(prior: tuple[Number, Number]) -> ElemReduceFunc:
-    """additive smoothing binomial with (possibly) asymmetric prior"""
+    """additive smoothing binomial with (possibly) asymmetric prior
+
+    Args:
+      prior: alpha,beta parameters of beta prior 
+
+    Returns: callable combining numerator and denominator 
+
+    """
     a, b = prior
 
     def _beta_binom_post(num: ElemWise, den: ElemWise) -> ElemWise:
@@ -66,24 +75,35 @@ def pseudocount(prior: tuple[Number, Number]) -> ElemReduceFunc:
 
 @dispatch(precedence=1)
 def pseudocount(prior: Literal["min-connect"]) -> ElemReduceFunc:
-    """additive smoothing binomial with asymmetric prior biasing sparsity
-
+    r"""additive smoothing binomial with asymmetric prior biasing sparsity
+    
     if observations are trials over an array of graph edges.
-
+    
     The number of edges that are on or off in a graph is "zero sum"... One extra "on" means
     one less "off.
     So, the proportion of time we will be observing an "on" edge might be thought of as a Wiener
     Process, and thus follows a (generalized) arcsine distribution.
-    This means we need a "bathtub" prior (a,b<1).
-
-    For a concave beta (a,b <1), the anti-mode is the least likely spot, with the two
+    This means we need a "bathtub" prior a+b=1.
+    
+    For a concave beta (a,b < 1), the anti-mode is the least likely spot, with the two
     (limiting) modes being at 0,1.
-    If a complete graph has `n(n-2)/2` edges, while a min. connected one has `n-1`, then
-    we can bias toward non-edges such that the least-likely p is the ratio `(1-(n-1)/(n*(n-1)/2)))`
+    If a complete graph has n(n-2)/2 edges, while a min. connected one has n-1, then
+    we can bias toward non-edges such that the least-likely p is the ratio 
+    
+    .. math::
+        \frac{1-(n-1)}{\frac{n*(n-1)}{2}}
+    
+    This comes out to a=2/n, b=1-2/n, so 
 
-    This comes out to `a=2/n, b=1-2/n`, so the P(p|a,b) = (succ+2/n)/(trials+1)
+    .. math:: 
+        P(p|a,b) = \frac{\textrm{\#successes}+2/n}{\textrm{\#trials}+1}
+
+    Args:
+      prior: "min-connect" 
+
+
+
     """
-
     def _beta_binom_post(num: ElemWise, den: ElemWise) -> ElemWise:
         n = _sq(num).shape[0]
         # n_nodes = num.shape[1]
@@ -97,8 +117,8 @@ def pseudocount(prior: Literal["min-connect"]) -> ElemReduceFunc:
 def pseudocount(prior: tuple[Literal["zero-sum"], Number]) -> ElemReduceFunc:
     """TODO derive the approx-cts for projection onto simplex
 
-    unlike the other methods, this directly returns the $\alpha$ values for
-    a $\text{Beta}(\alpha, 1-\alpha)$ distribution. For use when the full
+    unlike the other methods, this directly returns the `a` values for a      
+    Beta(a, 1-a) distribution. For use when the full
     Beta distribution is desired e.g. for active learning or uncertainty.
 
     (it turns out that a/(a+1-a) == a, so this is also the mean of the distribution)

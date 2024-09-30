@@ -1,10 +1,13 @@
 from functools import cache
-from typing import Callable
+from typing import Callable, TypeAlias
 
 import numpy as np
 from bidict import frozenbidict
 from scipy.linalg import lapack
 from scipy.sparse import coo_array, dok_array
+from jaxtyping import Int
+
+Idx: TypeAlias = Int[np.ndarray, "*elems"]
 
 # from scipy.sparse.linalg import eigsh
 from scipy.spatial.distance import squareform
@@ -56,12 +59,75 @@ def _map_edge_to_nodes(n: int):
     return frozenbidict(enumerate(zip(*[list(i) for i in np.triu_indices(n, k=1)])))
 
 
-def _e_to_ij(n: int, e: int) -> tuple[int, int]:
-    return _map_edge_to_nodes(n)[e]
+def sq_e_ij(n: int, e: Idx) -> tuple[Idx, Idx]:
+    """Closed-form expression to map edge-to-node-pair indices.
+
+    Get a row-column location in the upper-triangle of a symmetric
+    matrix, given the linear index of it's unrolled vector representation.
+
+    Parameters:
+        n: dimension of square/symmetric matrix
+        e: index of edge(s) from vector-representation
+
+    Returns:
+        pair of row(s),column(s) indices in corresponding matrix.
+    """
+    i = n - 2 - np.floor(np.sqrt(-8 * e + 4 * n * (n - 1) - 7) / 2.0 - 0.5)
+    j = e + i + 1 - n * (n - 1) / 2 + (n - i) * ((n - i) - 1) / 2
+    return i.astype(int), j.astype(int)
+    # return _map_edge_to_nodes(n)[e]
 
 
-def _ij_to_e(n: int, ij: tuple[int, int]):
-    return _map_edge_to_nodes(n).inverse[ij]
+def sq_ij_e(n: int, ij: tuple[Idx, Idx]) -> Idx:
+    """Closed-form expression to map edge-to-node-pair indices.
+
+    Get an edge index from a row-column index pai  upper-triangle of a
+    symmetric matrix.
+
+    Parameters:
+        n: dimension of square/symmetric matrix
+        ij: pair of row(s),column(s) indices in corresponding matrix.
+
+    Returns:
+        index of edge(s) from vector-representation
+    """
+    i, j = ij
+    e = (n * (n - 1) / 2) - (n - i) * ((n - i) - 1) / 2 + j - i - 1
+    return e.astype(int)
+    # return _map_edge_to_nodes(n).inverse[ij]
+
+
+def _pairwise_combinations_of(a):
+    """vec of IDs  --> matrix of pairwise combinations
+
+    thanks to https://stackoverflow.com/a/57567014
+    """
+    n = len(a)
+    L = n * (n - 1) // 2
+    out = np.empty((L, 2), dtype=a.dtype)
+    m = ~np.tri(len(a), dtype=bool)
+    out[:, 0] = np.broadcast_to(a[:, None], (n, n))[m]
+    out[:, 1] = np.broadcast_to(a, (n, n))[m]
+    return out
+
+
+def complete_edgelist_on_nodes(n: int, u: Idx) -> Idx:
+    """find the edge IDs for complete subgraph induced by `u`
+
+    Parameters:
+        n: size of graph/dim of adjacency matrix
+        u: vector of node IDs to induce a subgraph
+
+    Returns:
+        vector of edge IDs for complete graph on `u`
+    """
+    node_combs = _pairwise_combinations_of(u).T
+    return sq_ij_e(n, node_combs)
+
+
+def groupby_col0(a):
+    """[see source](https://stackoverflow.com/a/43094244)"""
+    return np.split(a[:, 1], np.unique(a[:, 0], return_index=True)[1][1:])
 
 
 def _upper_triangular_to_symmetric(ut):

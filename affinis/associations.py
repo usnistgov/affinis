@@ -1,11 +1,23 @@
+
+from __future__ import annotations
 import numpy as np
 from scipy.sparse.csgraph import minimum_spanning_tree, shortest_path, reconstruct_path
-from scipy.sparse import coo_array, issparse
-from .utils import _sq, _outer, _sparse_directed_to_symmetric, _get_masked_sq
-from .priors import pseudocount
+from scipy.sparse import coo_array, issparse, sparray
+import sparse
+from jaxtyping import Bool, Num
+from typing import TypeAlias
+from .utils import (
+    _sq,
+    _outer,
+    _sparse_directed_to_symmetric,
+    groupby_col0,
+    complete_edgelist_on_nodes,
+    sq_ij_e,
+)
+from .priors import pseudocount, PsdCts
 
-"""
-All functions in this module take in data as _design matrices_ 
+__doc__ = """
+All functions in this module take in data as design matrices
 (i.e. observations x features), and return a feature association measure 
 (i.e. features x features). 
 
@@ -16,10 +28,14 @@ are partially or fully correlated to themselves).
 Where appropriate, the methods here allow for additive/laplace smoothing, even in cases 
 where this is not traditionally done (like cosine similarity). We give interpretations
 of meaning that allow for this, where we can.
-
-TODO: define type signatures by array shapes
-TODO: dispatch on dataframes, static-frames, etc.
 """
+
+# TODO: define type signatures by array shapes
+# TODO: dispatch on dataframes, static-frames, etc.
+
+Arr: TypeAlias = sparse.SparseArray | sparray | np.ndarray
+FeatMat: TypeAlias = Bool[Arr, "obs feat"]
+SimsMat: TypeAlias = Num[Arr, "feat feat"]
 
 
 def _gram(X1, X2):
@@ -27,15 +43,21 @@ def _gram(X1, X2):
     return grammian.toarray() if issparse(grammian) else grammian
 
 
-def coocur_prob(X, pseudocts=0.5):
-    """probability of a co-ocurrence per-observation"""
+def coocur_prob(X: FeatMat, pseudocts: PsdCts = 0.5) -> SimsMat:
+    """probability of a co-ocurrence per-observation
+
+    Args:
+      X: feature matrix     
+      pseudocts:  (Default value = 0.5)
+
+    """
 
     cts = _gram(X, X)
     tot = X.shape[0]
     return pseudocount(pseudocts)(cts, tot)
 
 
-# def cond_prob(X, pseudocts=0.):
+# def cond_prob(X:FeatMat, pseudocts:PsdCts=0.):
 #     cts = X.T@X + pseudocts
 #     tot = X.sum(axis=0)+2
 #     return cts/tot
@@ -53,7 +75,7 @@ def _marginal_cts(X):
     return X.sum(axis=0), _not(X).sum(axis=0)
 
 
-def _marginal_prob(X, pseudocts=0.5):
+def _marginal_prob(X: FeatMat, pseudocts: PsdCts = 0.5):
     # psdct = pseudocount(pseudocts)  #TODO cannot use _sq(num) when num is 1D!!
     # return [psdct(ct, X.shape[0]) for ct in _marginal_cts(X)]
     return [(ct + pseudocts) / (X.shape[0] + 2 * pseudocts) for ct in _marginal_cts(X)]
@@ -68,7 +90,7 @@ def _contingency_cts(X):
     return neither, one, other, both
 
 
-def _contingency_prob(X, pseudocts=0.5):
+def _contingency_prob(X: FeatMat, pseudocts: PsdCts = 0.5):
     psdct = pseudocount(pseudocts)
     cts = np.vstack(_contingency_cts(X))
     return [psdct(ct, X.shape[0]) for ct in cts]
@@ -85,7 +107,7 @@ def _binary_contingency(X):
     return neither, one, other, both
 
 
-def odds_ratio(X, pseudocts=0.5):
+def odds_ratio(X: FeatMat, pseudocts: PsdCts = 0.5) -> SimsMat:
     """Ratio of the odds of a true pos/neg to false pos/neg
 
     For associations, we replace pos/neg and true/false with
@@ -95,10 +117,17 @@ def odds_ratio(X, pseudocts=0.5):
     return _sq(a * d / (b * c)) + np.eye(X.shape[1])
 
 
-def mutual_information(X, pseudocts=0.5):
+def mutual_information(X: FeatMat, pseudocts: PsdCts = 0.5) -> SimsMat:
     """Mutual Information over binary random variables
 
     For use in e.g. Chow-Liu Trees
+
+    Args:
+        X: feature matrix
+        pseudocts: (Default value = 0.5) Assumed to apply to contingency table cts
+
+    Returns:
+
     """
     Pxy = np.array(_contingency_prob(X, pseudocts=pseudocts))
 
@@ -120,11 +149,18 @@ def mutual_information(X, pseudocts=0.5):
     # return sq(entropy(Pxy, PxPy))
 
 
-def chow_liu(X, pseudocts=0.5):
+def chow_liu(X: FeatMat, pseudocts: PsdCts = 0.5) -> SimsMat:
     """Chow-Liu Tree on the features of a (binary) design matrix
 
     computes mutual information over all pairs of features, and returns
     the maximum spanning tree on them. Assumes a symmetric adjacency is wanted.
+
+    Args:
+      X: feature matrix
+      pseudocts:  (Default value = 0.5)
+
+    Returns: Adjacency matrix of the Chow Liu MST
+
     """
     # return sq(sq(minimum_spanning_tree(-MI_binary(X)).todense()))
     return _sq(
@@ -136,10 +172,17 @@ def chow_liu(X, pseudocts=0.5):
     )
 
 
-def yule_y(X, pseudocts=0.5):
+def yule_y(X: FeatMat, pseudocts: PsdCts = 0.5) -> SimsMat:
     """a.k.a. Coefficient of Colligation.
 
     mobius transform of the Odds Ratio to the range [-1,1]
+
+    Args:
+      X: feature matrix
+      pseudocts:  (Default value = 0.5)
+
+    Returns: square matrix containing Yule's Y
+
     """
     a, b, c, d = _contingency_prob(X, pseudocts=pseudocts)
     return _sq(((ad := np.sqrt(a * d)) - (bc := np.sqrt(b * c))) / (ad + bc))
@@ -147,25 +190,42 @@ def yule_y(X, pseudocts=0.5):
     # return ((ad:=np.sqrt(both*neither))-(bc:=np.sqrt(one*other)))/(ad+bc)
 
 
-def yule_q(X, pseudocts=0.5):
+def yule_q(X: FeatMat, pseudocts: PsdCts = 0.5) -> SimsMat:
     """a.k.a. Goodman & Kruskal's gamma for 2x2.
 
     mobius transform of the Odds Ratio to the range [-1,1]
+
+    Args:
+      X: feature matrix
+      pseudocts:  (Default value = 0.5)
+
+    Returns: square matrix containing Yule's Q
+
     """
     a, b, c, d = _contingency_prob(X, pseudocts=pseudocts)
     return _sq(((ad := a * d) - (bc := b * c)) / (ad + bc))
 
 
-def ochiai(X, pseudocts=0.5):
-    """AKA cosine similarity on binary sets
+def ochiai(X: FeatMat, pseudocts: PsdCts = 0.5) -> SimsMat:
+    r"""AKA cosine similarity on binary sets
 
     This code illustrates the idea that we can interpret it as conditional probability:
     The "exposure" of pairwise co-occurrences can't be larger than the sample size,
     so instead we approximate it as a psuedo-variable  having the geometric average of
-    two original exposure rates $\sqrt{X_1X_2}$
+    two original (conditional) exposure rates
+
+    .. math::
+        \sqrt{x_{ii},x_{jj}}
 
     This interpretation has a nice side-effect of letting us "smooth" the measure with
     laplace/additive pseudocounts on each bernoulli(-ish) "co-occurrence variable".
+
+    Args:
+      X: feature matrix
+      pseudocts:  (Default value = 0.5)
+
+    Returns: square cosine similarity matrix (incl. ones in the diagonal)
+
     """
     # I = np.eye(X.shape[-1])
     co_occurs = _sq(_gram(X, X))  # + pseudocts
@@ -175,12 +235,22 @@ def ochiai(X, pseudocts=0.5):
     return _sq(pseudocount(pseudocts)(co_occurs, pseudo_exposure)) + np.eye(X.shape[1])
 
 
-def binary_cosine_similarity(X, pseudocts=0.5):
-    """alias of `ochiai(X), provided for user convenience"""
+def binary_cosine_similarity(X: FeatMat, pseudocts: PsdCts = 0.5) -> SimsMat:
+    """alias of ochiai(X), provided for user convenience
+
+    Args:
+      X: feature matrix
+      pseudocts:  (Default value = 0.5)
+
+    Returns: cosine similarity on binary feature vectors
+
+    """
     return ochiai(X, pseudocts=pseudocts)
 
 
-def resource_project(X, pseudocts=0.5, sym_func=np.maximum):
+def resource_project(
+    X: FeatMat, pseudocts: PsdCts = 0.5, sym_func=np.maximum
+) -> SimsMat:
     """bipartite project due to Zhao et al.
 
     Really just a step of sinkhorn-knopp on the bipartite adjacency
@@ -194,6 +264,14 @@ def resource_project(X, pseudocts=0.5, sym_func=np.maximum):
     by default, we symmetrize with "maximum", meaning that association is
     considered as the strongest of the directions it could take. This
     can be overridden with any function of two same-shaped arrays.
+
+    Args:
+      X: featiure matrix
+      pseudocts:  (Default value = 0.5)
+      sym_func:  (Default value = np.maximum)
+
+    Returns: symmetrized "resource projection" similarities
+
     """
     psdct_func = pseudocount(pseudocts)
 
@@ -208,10 +286,18 @@ def resource_project(X, pseudocts=0.5, sym_func=np.maximum):
     return sym_func(P, P.T)
 
 
-def high_salience_skeleton(X, prior=ochiai, pseudocts="min-connect"):
-    """Grady et al. (2012)
+def high_salience_skeleton(X: FeatMat, prior=ochiai, pseudocts: PsdCts = "min-connect"):
+    """Backboning technique from Grady et al. (2012)
     Calculates shortest paths from every node, and counts the
     number of trees each edge ended up being used in.
+
+    Args:
+      X: feature matrix
+      prior:  (Default value = ochiai) callable to calculate distances for shortest paths
+      pseudocts:  (Default value = "min-connect")
+
+    Returns: (smoothed/beta bernoulli) parameters for shortest path occurrences.
+
     """
     est_dists = np.abs(-np.log(prior(X, pseudocts=pseudocts)))
     d, pred = shortest_path(est_dists, return_predecessors=True)
@@ -230,66 +316,110 @@ def high_salience_skeleton(X, prior=ochiai, pseudocts="min-connect"):
     return _sq(hss)
 
 
+def _pursue_tree_basis(dists, nodes):
+    N = dists.shape[0]
+    all_E = complete_edgelist_on_nodes(N, nodes)
+    subset_dists = dists[nodes].T[nodes].T
+    tree = sparse.COO.from_scipy_sparse(minimum_spanning_tree(subset_dists))
+    tree_E = sq_ij_e(tree.shape[0], tree.coords)
+    return all_E[tree_E]
+
+
 def _spanning_forests_obs_bootstrap(X, prior_dists=None):
     """resample with a kernel bootstrap on MSTs in a manifold"""
     if prior_dists is None:
         prior_dists = -np.log(ochiai(X, pseudocts=0.5))
 
-    N_obs = X.toarray() if issparse(X) else X
-    E_obs = coo_array(
-        [
-            _sq(
-                minimum_spanning_tree(_get_masked_sq(_sq(prior_dists), i)).todense() > 0
-            )
-            for i in N_obs
-        ]
+    # N_obs = X.toarray() if issparse(X) else X
+    N_obs = sparse.COO.from_scipy_sparse(X) if issparse(X) else sparse.COO(X)
+    N_activations = groupby_col0(N_obs.coords.T)
+    E_activations = [_pursue_tree_basis(prior_dists, nodes) for nodes in N_activations]
+
+    E_coords = (
+        np.repeat(np.arange(N_obs.shape[0]), np.array([len(e) for e in E_activations])),
+        np.concatenate(E_activations),
     )
-    return E_obs
+    n = X.shape[1]
+    m = n * (n - 1) // 2
+    return coo_array(
+        sparse.COO(E_coords, data=1, shape=(X.shape[0], m)).to_scipy_sparse()
+    )
+
+    # E_obs = coo_array(
+    #     [
+    #         _sq(
+    #             minimum_spanning_tree(_get_masked_sq(_sq(prior_dists), i)).todense() > 0
+    #         )
+    #         for i in N_obs
+    #     ]
+    # )
+    # return E_obs
 
 
-def SFD_interaction_cts(X, prior_dists=None):
+def forest_pursuit_cts(X: FeatMat, prior_dists=None) -> SimsMat:
     """Point estimate for number of actual edge activations, rather than
     node-node co-occurrences.
-    Uses the Spanning Forest Density (Forest for the Trees)
+    Uses the Empirical Bayes estimate of the Spanning Forest Density
+
+    Args:
+      X: feature matrix
+      prior_dists:  (Default value = None)
+
+    Returns: counts for approximate steiner tree occurrences.
+
     """
 
     # est_dists = -np.log(prior(X, pseudocts=pseudocts))
     e_obs = _spanning_forests_obs_bootstrap(X, prior_dists=prior_dists)
     return _sq(e_obs.sum(axis=0))
 
-    # def unroll_node_obs(X):
-    #     trirow, tricol = np.triu_indices(n=X.shape[1],k=1)
-    #     return np.einsum('ij,ik->ijk', X, X)[:,trirow, tricol]
 
-    # project into edge-space, only retaining MST activations
-    # co_prob = coocur_prob(X,pseudocts=pseudocts)
-    # e_prob = (E_obs.sum(axis=0)+pseudocts)*_sq(co_prob)/_sq(_gram(X,X)+1)
-
-    # (E_obs.sum(axis=0)+0.5)*_sq(coocur_prob(X, pseudocts=0.5))/_sq(X.T@X+1)
-
-
-def SFD_edge_cond_prob(X, prior_dists=None, pseudocts="min-connect"):
+def forest_pursuit_edge(
+    X: FeatMat, prior_dists=None, pseudocts: PsdCts = "min-connect"
+) -> SimsMat:
     """point estimate for edge-activation probability, conditional on
     both nodes being a priori activated.
     Uses the Spanning Forest Density non-parametric estimator
+
+    Args:
+      X: feature matrix
+      prior_dists:  (Default value = None) default uses -log(cos-sim)
+      pseudocts:  (Default value = "min-connect")
+
+    Returns: probability of edge traversal given a co-occurrence. 
     """
-    e_cts = _sq(SFD_interaction_cts(X, prior_dists=prior_dists))
+    e_cts = _sq(forest_pursuit_cts(X, prior_dists=prior_dists))
     uv_cts = _sq(_gram(X, X))
     # e_prob = (e_cts + pseudocts) / (uv_cts + 2 * pseudocts)
     e_prob = pseudocount(pseudocts)(e_cts, uv_cts)
     return _sq(e_prob)
 
 
-def SFD_interaction_prob(
-    X, prior_dists=None, precalc_prob=None, pseudocts="min-connect"
-):
-    """point estimate for edge-activation probability using the
-    Spanning Forest Density non-parametric estimator
-    TODO check X and precalc_cts have correct dim
+def forest_pursuit_interaction(
+    X: FeatMat,
+    prior_dists=None,
+    precalc_prob: SimsMat | None = None,
+    pseudocts: PsdCts = "min-connect",
+) -> SimsMat:
+    """point estimate for probability of observing an edge traversal,
+    using the Spanning Forest Density non-parametric estimator. Weights conditional
+    edge traversal probability by the base co-occurrence probability. 
+
+    If you have already calculated forest_pursuit_edge, you can pass it as precalc_prob. 
+
+    Args:
+      X: feature matrix
+      prior_dists: (Default value = None) default uses -log(cos-sim)
+      precalc_prob: (Default value = None) to avoid re-computing edge prob
+      pseudocts:  (Default value = "min-connect")
+
+    Returns: probability of observing an edge traversal
+
     """
+    # TODO: check X and precalc_cts have correct dim
     if not precalc_prob:
         e_prob = _sq(
-            SFD_edge_cond_prob(X, prior_dists=prior_dists, pseudocts=pseudocts)
+            forest_pursuit_edge(X, prior_dists=prior_dists, pseudocts=pseudocts)
         )
     else:
         e_prob = _sq(precalc_prob)
@@ -298,8 +428,8 @@ def SFD_interaction_prob(
     return _sq(e_margP)
 
 
-def SFD_edge_prob(X, prior_dists=None, pseudocts="min-connect"):
-    """re-scaling of SFD Interraction probability that tends to
+def forest_pursuit_normdegs(X, prior_dists=None, pseudocts="min-connect"):
+    """DEPRECATED re-scaling of SFD Interraction probability that tends to
     move the highest-probability edges for each node toward 1.0.
 
     If a graph generating random walks has an underlying "simple, connected"
@@ -309,9 +439,10 @@ def SFD_edge_prob(X, prior_dists=None, pseudocts="min-connect"):
     interraction probabilities for each node, individually.
 
     I.e. even if an edge is somewhat rare because the node connected to it has many other
-    edges (high-degree), our belief in its existence is weighted by its comparative strength
-    of other interactions its two nodes experience.
+    edges (high-degree), our belief in its existence is weighted by its comparative strength of other interactions its two nodes experience.
     """
-    e_margP = _sq(SFD_interaction_prob(X, prior_dists=prior_dists, pseudocts=pseudocts))
+    e_margP = _sq(
+        forest_pursuit_interaction(X, prior_dists=prior_dists, pseudocts=pseudocts)
+    )
     gmean_max = _sq(_outer(np.multiply, np.sqrt(_sq(e_margP).max(axis=0))))
     return _sq(e_margP / gmean_max)
