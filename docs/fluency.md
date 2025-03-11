@@ -13,6 +13,11 @@ kernelspec:
 ---
 
 ```{code-cell} ipython3
+---
+editable: true
+slideshow:
+  slide_type: ''
+---
 import pandas as pd
 import numpy as np
 import seaborn as sns

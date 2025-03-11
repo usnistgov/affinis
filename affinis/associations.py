@@ -13,8 +13,10 @@ from .utils import (
     groupby_col0,
     complete_edgelist_on_nodes,
     sq_ij_e,
+    edge_weights_to_laplacian,
 )
 from .priors import pseudocount, PsdCts
+from .distance import adjusted_forest_dists
 
 __doc__ = """
 All functions in this module take in data as design matrices
@@ -316,24 +318,35 @@ def high_salience_skeleton(X: FeatMat, prior=ochiai, pseudocts: PsdCts = "min-co
     return _sq(hss)
 
 
-def _pursue_tree_basis(dists, nodes):
+def _pursue_tree_basis(dists, nodes, edge_priors=False, beta=0.001):
     N = dists.shape[0]
     all_E = complete_edgelist_on_nodes(N, nodes)
     subset_dists = dists[nodes].T[nodes].T
+    if edge_priors:
+        # if we are recieving an estimate for the Graph Laplacian
+        # ...approximate steiner with local shortest path dists. 
+        subset_dists = adjusted_forest_dists(subset_dists, beta=beta)
     tree = sparse.COO.from_scipy_sparse(minimum_spanning_tree(subset_dists))
     tree_E = sq_ij_e(tree.shape[0], tree.coords)
     return all_E[tree_E]
 
 
-def _spanning_forests_obs_bootstrap(X, prior_dists=None):
+def _spanning_forests_obs_bootstrap(X, prior_dists=None, edge_priors=False, beta=0.001):
     """resample with a kernel bootstrap on MSTs in a manifold"""
-    if prior_dists is None:
+    if (prior_dists is None) and (not edge_priors):
         prior_dists = -np.log(ochiai(X, pseudocts=0.5))
 
+    elif edge_priors:
+        # TODO: enforce laplacian!
+        assert np.allclose(prior_dists.sum(axis=0),0)
+        
     # N_obs = X.toarray() if issparse(X) else X
     N_obs = sparse.COO.from_scipy_sparse(X) if issparse(X) else sparse.COO(X)
     N_activations = groupby_col0(N_obs.coords.T)
-    E_activations = [_pursue_tree_basis(prior_dists, nodes) for nodes in N_activations]
+    E_activations = [
+        _pursue_tree_basis(prior_dists, nodes, edge_priors=edge_priors, beta=beta)
+        for nodes in N_activations
+    ]
 
     E_coords = (
         np.repeat(np.arange(N_obs.shape[0]), np.array([len(e) for e in E_activations])),
@@ -356,6 +369,7 @@ def _spanning_forests_obs_bootstrap(X, prior_dists=None):
     # return E_obs
 
 
+
 def forest_pursuit_cts(X: FeatMat, prior_dists=None) -> SimsMat:
     """Point estimate for number of actual edge activations, rather than
     node-node co-occurrences.
@@ -373,6 +387,38 @@ def forest_pursuit_cts(X: FeatMat, prior_dists=None) -> SimsMat:
     e_obs = _spanning_forests_obs_bootstrap(X, prior_dists=prior_dists)
     return _sq(e_obs.sum(axis=0))
 
+def expected_forest_maximization(
+    X: FeatMat,
+    prior_struct=None,
+    beta=0.001,
+    eps=1e-5,
+    max_iter=100,
+    verbose=False,
+) -> SimsMat:
+    """ Expectation Maximization Scheme to recover structure
+    
+    """
+    if prior_struct is None:
+        e_prob = forest_pursuit_edge(X)
+        prior_struct = edge_weights_to_laplacian(e_prob)
+
+    uv_cts = _sq(_gram(X,X))    
+    
+    diff, it = 1.,0
+
+    while (diff>eps) and (it<max_iter):
+        it+=1
+        e_cts = _spanning_forests_obs_bootstrap(X, prior_dists=prior_struct, edge_priors=True, beta=beta).sum(axis=0)
+        e_prob_new = e_prob + (e_cts - e_prob*uv_cts)/(uv_cts+1)  # posterior for Beta(a, 1-a)
+        diff = np.max(np.abs(e_prob_new - e_prob))
+        e_prob = e_prob_new
+        prior_struct = edge_weights_to_laplacian(e_prob)
+
+    if verbose:
+        return _sq(e_prob), it
+    else:
+        return _sq(e_prob)
+        
 
 def forest_pursuit_edge(
     X: FeatMat, prior_dists=None, pseudocts: PsdCts = "min-connect"

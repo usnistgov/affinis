@@ -201,6 +201,10 @@ def sparse_adj_to_incidence(A):
 def n_nodes_from_edges(e):
     return int((np.sqrt(8 * e.shape[0] + 1) + 1) // 2)
 
+def edge_weights_to_laplacian(e):
+    A = _sq(e)
+    D = np.diag(A.sum(axis=0))
+    return D - A
 
 def edge_mask_to_laplacian(e):
     """given a masked array of edge-weights, form a laplacian matrix with a -1 if
