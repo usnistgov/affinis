@@ -399,7 +399,7 @@ def expected_forest_maximization(
     
     """
     if prior_struct is None:
-        e_prob = forest_pursuit_edge(X)
+        e_prob = _sq(forest_pursuit_edge(X))
         prior_struct = edge_weights_to_laplacian(e_prob)
 
     uv_cts = _sq(_gram(X,X))    
