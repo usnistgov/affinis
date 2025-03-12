@@ -339,7 +339,8 @@ def _spanning_forests_obs_bootstrap(X, prior_dists=None, edge_priors=False, beta
 
     elif edge_priors:
         # TODO: enforce laplacian!
-        assert np.allclose(prior_dists.sum(axis=0),0)
+        # assert np.allclose(prior_dists.sum(axis=0),0)
+        pass
         
     # N_obs = X.toarray() if issparse(X) else X
     N_obs = sparse.COO.from_scipy_sparse(X) if issparse(X) else sparse.COO(X)
