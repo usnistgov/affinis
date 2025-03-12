@@ -14,6 +14,7 @@ from .utils import (
     complete_edgelist_on_nodes,
     sq_ij_e,
     edge_weights_to_laplacian,
+    _norm_diag,
 )
 from .priors import pseudocount, PsdCts
 from .distance import adjusted_forest_dists
@@ -400,7 +401,7 @@ def expected_forest_maximization(
     """
     if prior_struct is None:
         e_prob = _sq(forest_pursuit_edge(X))
-        prior_struct = edge_weights_to_laplacian(e_prob)
+        prior_struct = _norm_diag(edge_weights_to_laplacian(e_prob))
 
     uv_cts = _sq(_gram(X,X))    
     
@@ -412,7 +413,7 @@ def expected_forest_maximization(
         e_prob_new = e_prob + (e_cts - e_prob*uv_cts)/(uv_cts+1)  # posterior for Beta(a, 1-a)
         diff = np.max(np.abs(e_prob_new - e_prob))
         e_prob = e_prob_new
-        prior_struct = edge_weights_to_laplacian(e_prob)
+        prior_struct = _norm_diag(edge_weights_to_laplacian(e_prob))
 
     if verbose:
         return _sq(e_prob), it
