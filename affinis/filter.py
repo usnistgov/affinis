@@ -1,7 +1,7 @@
 import numpy as np
 from numpy import ma
 import scipy.sparse as sp
-from .utils import edge_mask_to_laplacian, _binary_search_greatest, n_nodes_from_edges
+from .utils import edge_mask_to_laplacian, _binary_search_greatest, n_nodes_from_edges, _sq
 # from functools import partial
 
 
@@ -26,11 +26,14 @@ def min_connected_filter(edge_weights):
     # ds = sinkhorn(adj)
     # ds_edges = edgelist(ds)
     n = n_nodes_from_edges(edge_weights)
-
     def connected(thres):
-        return check_connected(
-            edge_mask_to_laplacian(threshold_edges_filter(edge_weights, thres))
-        )
+        """bfs cardinality is 100x faster and more stable than eigsh/fiedler"""
+        # return check_connected(
+        #     edge_mask_to_laplacian(threshold_edges_filter(edge_weights, thres))
+        # )
+        A = sp.coo_array(_sq(edge_weights>thres))
+        bfs = sp.csgraph.breadth_first_tree(A, 0, directed=False)
+        return bfs.sum() == n - 1
 
     pos = edge_weights.argsort()
 
