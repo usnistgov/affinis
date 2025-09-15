@@ -52,9 +52,12 @@ pip install git+https://github.com/usnistgov/affinis.git
 
 ### Contact the PI
 
-Rachael Sexton (NIST Engineering Laboratory)
-: Information Modeling & Testing Group (Systems Integration Division)
-  rachael.sexton@nist.gov
+[Rachael Sexton](https://www.nist.gov/people/rachael-t-sexton)
+
+- [`rachael.sexton@nist.gov`](mailto:rachael.sexton@nist.gov)
+- NIST Engineering Laboratory
+- Systems Integration Division
+- Information Modeling & Testing Group 
 
 
 ### Related Material
