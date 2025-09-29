@@ -5,5 +5,7 @@ format: jb-book
 root: index
 chapters:
 - file: install
+- file: using
+- file: example
 - file: api
 # - file: markdown-notebooks
