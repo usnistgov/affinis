@@ -12,7 +12,7 @@ kernelspec:
   name: affinis
 ---
 
-# Using Affinis
+# Using `affinis` for Relational Analysis
 
 ```{code-cell} ipython3
 import numpy as np
@@ -20,181 +20,194 @@ import networkx as nx
 import seaborn as sns
 import pandas as pd
 import matplotlib.pyplot as plt
-rng = np.random.default_rng(42)
+# rng = np.random.default_rng(42)
 sns.set_theme(style='white')
 ```
 
-## Problem Setting
-
-Synthesizing a network of colleagues that ask each other to join them on papers: 
-
 ```{code-cell} ipython3
-n_authors=25
-author_idx = pd.CategoricalIndex((f'author_{i:>02}' for i in range(1,n_authors+1)))
-
-# friends with some cliques
-friendships = nx.line_graph(nx.random_tree(len(author_idx)+1, seed=7)) # real events... what "happens" as evidence of a relationship
-
-G = nx.relabel.relabel_nodes(
-    nx.convert_node_labels_to_integers(friendships),
-    dict(zip(range(n_authors),author_idx.categories.tolist()))
-)  # inferred structure
-
-
-A = nx.adjacency_matrix(G).todense()
-L = nx.laplacian_matrix(G).todense()
-
-
-def draw_G(G, ax=None):
-    
-    pos=nx.layout.kamada_kawai_layout(G)
-    nx.draw(G, pos=pos, 
-            node_color='xkcd:puce', edge_color='grey', ax=ax)
-    nx.draw_networkx_labels(G, pos=pos, font_color='k',labels={n:n.split('_')[-1] for n in G}, ax=ax)
-    plt.title('Author Friendships', color='grey')
-    return pos
-f = plt.figure(figsize=(5,4)).patch.set_alpha(0.)
-pos = draw_G(G)
+B = nx.bipartite.random_graph(15,30, .25, seed=2)
+n = list(B.nodes)[15:]
 ```
 
-Now we need to simulate the process of authors joining each list of authors. 
-
-- for 50 papers, we select a random individual to intiate it. 
-- for each paper, we spread the paper's concept to colleagues.
-  - a geometrically distributed number of requests to join will be successful,
-  - Each request comes from an existing author, able to ask any of their connected colleagues to join
-- Represent the authors on a given paper each week as "active" 
-
 ```{code-cell} ipython3
-def sim_papers(n_weeks, L, jumps_param=0.1, rng=np.random.default_rng(2)): 
-    Arw = ((L/np.diag(L)).pipe(lambda df: np.diag(np.diag(df))-df)*0.5)
-    def sim_week(): 
-        n_jumps = rng.geometric(jumps_param)
-        first = rng.multinomial(1,starting:=np.ones(n_authors)/n_authors) 
-        # second = (rng.random()>0.5)*rng.multinomial(1,starting)  # maybe
-        infected = first #| second
-        for jump in range(n_jumps):
-            # print((Arw@infected>1).sum(), infected)
-            infected = infected | rng.binomial(1, Arw@(infected/infected.sum()))
-        return infected
-
-
-    yield from (sim_week() for i in range(n_weeks))
-
-# n_obs ~ neg_binom(2, 1/n_nodes)
-# n_jumps ~ geom(2/n_nodes)
-X = np.vstack(list(sim_papers(
-    50, 
-    pd.DataFrame(L, columns=author_idx, index=author_idx), 
-    0.05,
-    #  rng=rng
-)))
-Xdf = pd.DataFrame(X, columns=author_idx)
-
-# Xstack = np.vstack([X, -X])#.mean(axis=0)
-```
-
-We can visualize these author-paper connections as binary "activation" relationships in a matrix, with one author-per-column, one paper-per-row: 
-
-```{code-cell} ipython3
+X = nx.bipartite.biadjacency_matrix(B, n).toarray()
 plt.spy(X)
 plt.axis('off')
 ```
 
-Number of papers each author participated on: 
-
 ```{code-cell} ipython3
-plt.figure(figsize=(4,2))
-sns.histplot(Xdf.sum(axis=0), discrete=True)
+X.sum(axis=1)
 ```
 
-Number of authors on each paper: 
+## Visualizing Relations
 
 ```{code-cell} ipython3
-plt.figure(figsize=(4,2))
-sns.histplot(Xdf.sum(axis=1), discrete=True)
+cooc = X.T@X
+
+plt.spy(cooc, marker='o', color='k')
+plt.axis('off')
 ```
 
-## Association functions
-
-The core of the `affinis` library lives within the `affinis.associations` module. 
-
 ```{code-cell} ipython3
-from affinis.associations import coocur_prob, ochiai
 from affinis.plots import hinton
 
-cooc = coocur_prob(X, pseudocts=0.)
-
-csim = ochiai(X, pseudocts=0.)
-
 hinton(cooc)
-plt.spy(L, marker='x')
 ```
 
 ```{code-cell} ipython3
-hinton(csim)
-plt.spy(L, marker='x')
+sns.heatmap(cooc)
+```
+
+## Measuring Relatedness
+
++++
+
+### Basic Association
+
+```{code-cell} ipython3
+# from affinis.utils import sq_e_ij, _sq
+from scipy.spatial.distance import squareform
+
+def unwrap(A):
+    return squareform(A, checks=False)
+    
 ```
 
 ```{code-cell} ipython3
-from affinis.associations import (
-    coocur_prob,
-    odds_ratio,
-    mutual_information,
-    chow_liu,
-    yule_q, yule_y,
-    ochiai,
-    resource_project,
-    high_salience_skeleton, 
-    # SFD_edge_cond_prob,
-    # SFD_interaction_prob,
-)
+cooc = X.T@X
 
-from affinis.utils import (
-    _norm_diag,
-    # _e_to_ij, 
-    # _std_incidence_vec, 
-    _sq, 
-    _outer,
-    sparse_adj_to_incidence,
-)
+unwrap(cooc)
 ```
 
 ```{code-cell} ipython3
-def prox_to_laplacian(K):
-    A = -_sq(_sq(K))
-    np.fill_diagonal(A,-A.sum(axis=0))
-    return A
+from affinis.associations import coocur_prob, ochiai, odds_ratio, yule_y, yule_q
 
-psct = 'min-connect'
+# sns.histplot(unwrap(cooc_probs))
+sns.heatmap(coocur_prob(X, pseudocts=0.))
+```
 
-baselines = {
-    # 'co-occur':_sq(coocur_prob(X, pseudocts=1.)),
-    'cosine': _sq(ochiai(X, pseudocts=psct)),
-    # 'sinkhornOTP': _sq(sinkhorn(_sq(_sq(X.T@X)), err=1e-8)),
-    'resourceProj': _sq(resource_project(X)),
-    'odds-ratio': _sq(odds_ratio(X, pseudocts=psct)),
-    # 'yuleQ':_sq(yule_q(X, pseudocts=psct)),
-    'yuleY':_sq(yule_y(X, pseudocts=psct)),
+```{code-cell} ipython3
+sns.heatmap(ochiai(X, pseudocts=0.), vmin=0)
+```
 
-    # 'yuley': prox_to_edgeprob(yule_y(X)),
-    'mutualinfo': _sq(mutual_information(X, pseudocts=psct)),
-    # 'yuleq':np.arcsin(prox_to_edgeprob(yule_y(X)))/np.pi +0.5,
-    # 'glasso': -_sq(GraphicalLasso().fit(X).get_precision()),
-    # 'chow-liu':_sq((chow_liu(X, pseudocts=psct)>0.).astype(int)), 
-    'HSS': _sq(high_salience_skeleton(X))
+### Additive Smoothing
+
+```{code-cell} ipython3
+cos_sim = ochiai(X, pseudocts=1.)
+sns.heatmap(cos_sim, vmin=0)
+```
+
+```{code-cell} ipython3
+for i in [0., 0.5, 1.]: 
+    sns.histplot(unwrap(ochiai(X, pseudocts=i)), label=i, element='step')
+plt.legend()
+```
+
+### Backboning Methods
 
 
-    # 'sinkhorn-cos': _squareform(sinkhorn(cos - np.diag(np.diag(cos)), err=1e-8)),
-}
-f,axs = plt.subplots(nrows=2, ncols=3, figsize=(8,6))
+Going a bit further than pure association methods, for bipartite projection problems like these we are often trying to "backbone" our graph (association measures are notorious for turning these into "hairballs"). An example of this is the so-called _High-Salience Skeleton_. 
 
-for n, (lab, Aest) in enumerate(baselines.items()): 
-    ax = axs.flatten()[n]
-    ax.imshow(_sq(Aest))
-    ax.set_xlabel(lab)
-    ax.set_xticklabels([])
-    ax.set_yticklabels([])
+
+Alternatively, we might try to discover an underlying probabilistic graphical model that could have generated our observations. For example, the Chow-Liu True, or Forest Pursuit edge probability estimates.  
+
+```{code-cell} ipython3
+from affinis.associations import high_salience_skeleton, chow_liu, forest_pursuit_edge
+```
+
+```{code-cell} ipython3
+f,(ax1,ax2,ax3) = plt.subplots(ncols=3, figsize=(16,4))
+sns.heatmap(high_salience_skeleton(X, prior=coocur_prob), square=True, ax=ax1, )
+sns.heatmap(chow_liu(X), square=True, ax=ax2)
+sns.heatmap(forest_pursuit_edge(X), square=True, ax=ax3)
+ax1.set_title('HSS Backbone')
+ax2.set_title('Chow-Liu Tree')
+ax3.set_title('Forest Pursuit Edge Prob.');
+```
+
+There are many more ways to think about edge recovery, which are covered in a bit more detail in _Measuring Node Activations_ (Sexton 2025)
+
++++ {"jp-MarkdownHeadingCollapsed": true}
+
+### Overview
+
+![Table 4.1 from "Measuring Network Dependencies from Node Activations" (Sexton 2025)](https://dissertation.rtbs.dev/content/part1/1-03-recovery-road_files/figure-html/-content-codefigs-graphs-tbl-roads-output-1.svg)
+
++++
+
+## Filtering 
+
+It's commonly necessary to select a threshold value over which an edge "exists" and below which it doesn't. 
+Since edge recovery is very often an _unsupervised_ problem, a common way to select a relatively sparse threshold value is by removing edges until just before the graph would become disconnected. 
+
+`affinis` has implemented a fast routine for removing edges until the graph is about to become disconnected (using a binary search and breadth-first connectivity checks). 
+The returned array is a `numpy.ma.masked_array`, which is useful for simultaneously storing the sparsity pattern and the un-filtered values.
+
+
+```{code-cell} ipython3
+from affinis.filter import min_connected_filter
+
+filtered = min_connected_filter(unwrap(forest_pursuit_edge(X)))
+
+
+filtered
+```
+
+We can then use our filter on e.g. the Forest Pursuit edge probability estimates to recreate a possible MRF (adjacency matrix) that could have generated the observed occurence structure: 
+
+```{code-cell} ipython3
+
+A = unwrap(~filtered.mask)
+hinton(A)
+```
+
+## Proximity & Distance
+
+These modules mostly consist of helper functions for the `affinis.associations` module, but may be of interest in their own right. 
+
+The so-called "forest" kernel is a parameterized form of an inverse regularized Laplacian: 
+
+$$ Q_{\beta} = \left( I+\beta L \right)^{-1} $$
+
+
+Entries in this proximity matrix turn out to be the probability that a node ends up sharing a tree with another node, in a randomly sampled spanning forest of the graph. (hence the name). 
+
+```{code-cell} ipython3
+from affinis.proximity import forest
+from affinis.utils import edge_mask_to_laplacian
+
+
+L = edge_mask_to_laplacian(filtered).data
+# hinton(L)
+sns.heatmap(forest(L))
+```
+
+Another useful tool in this module is the `sinkhorn` function, which performs iterated proportional fitting (i.e. the Sinkhorn-Knopp iterations) to project a sqare matrix to it's nearest _doubly stochastic_ counterpart (rows and columns all sum to _approximately_ 1)
+
+This might be a useful way to approximate the forest kernel (which happens to also be doubly stochastic, per Chebotarev et al.) when you aren't willing to trust a threshold to be an accurate graph reconstruction. 
+
+```{code-cell} ipython3
+from affinis.proximity import sinkhorn 
+
+sns.heatmap(sinkhorn(ochiai(X)))
+
+print(sinkhorn(ochiai(X)).sum(axis=1))
+```
+
+From these proximities and kernels, we are able to turn them into distance metrics, using the bilinear form (see the documentation for more details). 
+
+
+```{code-cell} ipython3
+from affinis.distance import adjusted_forest_dists, generalized_graph_dists,bilinear_dists
+
+sns.heatmap(bilinear_dists(forest(L)))
+
+```
+
+This has been shortened, given a graph Laplacian, to quickly retrive the linear an logarithmic forms of the bilinear distance metric on a graph using `adjusted_forest_dists` and `generalized_graph_dists`, respectively: 
+
+```{code-cell} ipython3
+sns.heatmap(generalized_graph_dists(L))
 ```
 
 ```{code-cell} ipython3

@@ -9,7 +9,7 @@ only_build_toc_files: true
 # Force re-execution of notebooks on each build.
 # See https://jupyterbook.org/content/execute.html
 execute:
-  execute_notebooks: false
+  execute_notebooks: auto
 
 # Define the name of the latex output file for PDF builds
 latex:
@@ -53,6 +53,8 @@ sphinx:
     autodoc_typehints: 'description'
     python_use_unqualified_type_names: true
     latex_toplevel_sectioning: 'section'
+    nb_render_image_options:
+      scale: 50
     html_theme_options: 
       home_page_in_toc: true
       logo:
