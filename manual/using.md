@@ -5,11 +5,11 @@ jupytext:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.16.7
+    jupytext_version: 1.17.2
 kernelspec:
-  display_name: Python (affinis)
-  language: python
   name: affinis
+  display_name: affinis
+  language: python
 ---
 
 # Using `affinis` for Relational Analysis
@@ -109,7 +109,7 @@ plt.legend()
 Going a bit further than pure association methods, for bipartite projection problems like these we are often trying to "backbone" our graph (association measures are notorious for turning these into "hairballs"). An example of this is the so-called _High-Salience Skeleton_. 
 
 
-Alternatively, we might try to discover an underlying probabilistic graphical model that could have generated our observations. For example, the Chow-Liu True, or Forest Pursuit edge probability estimates.  
+Alternatively, we might try to discover an underlying probabilistic graphical model that could have generated our observations. For example, the Chow-Liu True, or Forest Pursuit edge probability estimates.
 
 ```{code-cell} ipython3
 from affinis.associations import high_salience_skeleton, chow_liu, forest_pursuit_edge
@@ -143,7 +143,6 @@ Since edge recovery is very often an _unsupervised_ problem, a common way to sel
 `affinis` has implemented a fast routine for removing edges until the graph is about to become disconnected (using a binary search and breadth-first connectivity checks). 
 The returned array is a `numpy.ma.masked_array`, which is useful for simultaneously storing the sparsity pattern and the un-filtered values.
 
-
 ```{code-cell} ipython3
 from affinis.filter import min_connected_filter
 
@@ -153,10 +152,9 @@ filtered = min_connected_filter(unwrap(forest_pursuit_edge(X)))
 filtered
 ```
 
-We can then use our filter on e.g. the Forest Pursuit edge probability estimates to recreate a possible MRF (adjacency matrix) that could have generated the observed occurence structure: 
+We can then use our filter on e.g. the Forest Pursuit edge probability estimates to recreate a possible MRF (adjacency matrix) that could have generated the observed occurence structure:
 
 ```{code-cell} ipython3
-
 A = unwrap(~filtered.mask)
 hinton(A)
 ```
@@ -170,7 +168,7 @@ The so-called "forest" kernel is a parameterized form of an inverse regularized 
 $$ Q_{\beta} = \left( I+\beta L \right)^{-1} $$
 
 
-Entries in this proximity matrix turn out to be the probability that a node ends up sharing a tree with another node, in a randomly sampled spanning forest of the graph. (hence the name). 
+Entries in this proximity matrix turn out to be the probability that a node ends up sharing a tree with another node, in a randomly sampled spanning forest of the graph. (hence the name).
 
 ```{code-cell} ipython3
 from affinis.proximity import forest
@@ -184,7 +182,7 @@ sns.heatmap(forest(L))
 
 Another useful tool in this module is the `sinkhorn` function, which performs iterated proportional fitting (i.e. the Sinkhorn-Knopp iterations) to project a sqare matrix to it's nearest _doubly stochastic_ counterpart (rows and columns all sum to _approximately_ 1)
 
-This might be a useful way to approximate the forest kernel (which happens to also be doubly stochastic, per Chebotarev et al.) when you aren't willing to trust a threshold to be an accurate graph reconstruction. 
+This might be a useful way to approximate the forest kernel (which happens to also be doubly stochastic, per Chebotarev et al.) when you aren't willing to trust a threshold to be an accurate graph reconstruction.
 
 ```{code-cell} ipython3
 from affinis.proximity import sinkhorn 
@@ -194,17 +192,15 @@ sns.heatmap(sinkhorn(ochiai(X)))
 print(sinkhorn(ochiai(X)).sum(axis=1))
 ```
 
-From these proximities and kernels, we are able to turn them into distance metrics, using the bilinear form (see the documentation for more details). 
-
+From these proximities and kernels, we are able to turn them into distance metrics, using the bilinear form (see the documentation for more details).
 
 ```{code-cell} ipython3
 from affinis.distance import adjusted_forest_dists, generalized_graph_dists,bilinear_dists
 
 sns.heatmap(bilinear_dists(forest(L)))
-
 ```
 
-This has been shortened, given a graph Laplacian, to quickly retrive the linear an logarithmic forms of the bilinear distance metric on a graph using `adjusted_forest_dists` and `generalized_graph_dists`, respectively: 
+This has been shortened, given a graph Laplacian, to quickly retrive the linear an logarithmic forms of the bilinear distance metric on a graph using `adjusted_forest_dists` and `generalized_graph_dists`, respectively:
 
 ```{code-cell} ipython3
 sns.heatmap(generalized_graph_dists(L))

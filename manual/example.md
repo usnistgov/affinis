@@ -5,11 +5,11 @@ jupytext:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.16.7
+    jupytext_version: 1.17.2
 kernelspec:
-  display_name: Python (affinis)
-  language: python
   name: affinis
+  display_name: affinis
+  language: python
 ---
 
 # Example: Reconstructing Colleague Networks with Forest Pursuit
@@ -26,14 +26,14 @@ sns.set_theme(style='white')
 
 ## Problem Setting
 
-Synthesizing a network of colleagues that ask each other to join them on papers: 
+Synthesizing a network of colleagues that ask each other to join them on papers:
 
 ```{code-cell} ipython3
 n_authors=25
 author_idx = pd.CategoricalIndex((f'author_{i:>02}' for i in range(1,n_authors+1)))
 
 # friends with some cliques
-friendships = nx.line_graph(nx.random_tree(len(author_idx)+1, seed=7)) # real events... what "happens" as evidence of a relationship
+friendships = nx.line_graph(nx.random_labeled_tree(len(author_idx)+1, seed=7)) # real events... what "happens" as evidence of a relationship
 
 G = nx.relabel.relabel_nodes(
     nx.convert_node_labels_to_integers(friendships),
@@ -57,7 +57,7 @@ f = plt.figure(figsize=(5,4)).patch.set_alpha(0.)
 pos = draw_G(G)
 ```
 
-Alternatively, we can view this network as an adjacency matrix: 
+Alternatively, we can view this network as an adjacency matrix:
 
 ```{code-cell} ipython3
 plt.spy(A, marker='.', color='r')
@@ -70,7 +70,7 @@ Now we need to simulate the process of authors joining each list of authors.
 - for each paper, we spread the paper's concept to colleagues.
   - a geometrically distributed number of requests to join will be successful,
   - Each request comes from an existing author, able to ask any of their connected colleagues to join
-- Represent the authors on a given paper each week as "active" 
+- Represent the authors on a given paper each week as "active"
 
 ```{code-cell} ipython3
 def sim_papers(n_weeks, L, jumps_param=0.1, rng=np.random.default_rng(2)): 
@@ -101,21 +101,21 @@ Xdf = pd.DataFrame(X, columns=author_idx)
 # Xstack = np.vstack([X, -X])#.mean(axis=0)
 ```
 
-We can visualize these author-paper connections as binary "activation" relationships in a matrix, with one author-per-column, one paper-per-row: 
+We can visualize these author-paper connections as binary "activation" relationships in a matrix, with one author-per-column, one paper-per-row:
 
 ```{code-cell} ipython3
 plt.spy(X)
 plt.axis('off')
 ```
 
-Number of papers each author participated on: 
+Number of papers each author participated on:
 
 ```{code-cell} ipython3
 plt.figure(figsize=(4,2))
 sns.histplot(Xdf.sum(axis=0), discrete=True)
 ```
 
-Number of authors on each paper: 
+Number of authors on each paper:
 
 ```{code-cell} ipython3
 plt.figure(figsize=(4,2))
@@ -124,7 +124,7 @@ sns.histplot(Xdf.sum(axis=1), discrete=True)
 
 ## Association functions
 
-The core of the `affinis` library lives within the `affinis.associations` module. 
+The core of the `affinis` library lives within the `affinis.associations` module.
 
 ```{code-cell} ipython3
 from affinis.associations import coocur_prob, ochiai
