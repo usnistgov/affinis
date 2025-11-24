@@ -1,5 +1,4 @@
 ---
-title: Worked Example
 jupytext:
   formats: md:myst
   text_representation:
@@ -13,6 +12,7 @@ kernelspec:
   language: python
 ---
 
+# Example: Les Miserables
 
 ```{code-cell} ipython3
 

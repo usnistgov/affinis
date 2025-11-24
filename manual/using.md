@@ -1,5 +1,4 @@
 ---
-title: Using `affinis`
 jupytext:
   formats: md:myst
   text_representation:
@@ -13,6 +12,7 @@ kernelspec:
   language: python
 ---
 
+# Using Affinis
 
 ```{code-cell} ipython3
 
