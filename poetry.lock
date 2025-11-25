@@ -453,7 +453,7 @@ test = ["pytest"]
 
 [[package]]
 name = "contingency"
-version = "0.2.0"
+version = "0.2.1"
 description = "Add your description here"
 optional = false
 python-versions = ">=3.11, <3.14"
@@ -474,7 +474,7 @@ plot = ["matplotlib (>=3.10.6)"]
 type = "git"
 url = "https://github.com/usnistgov/Contingency.git"
 reference = "HEAD"
-resolved_reference = "255b7b5a6b780e3bf5d711d81629e96457e2d8e8"
+resolved_reference = "df5e681d710eaab36cba2bc0b2dc5ca5300b8f0d"
 
 [[package]]
 name = "contourpy"
@@ -3916,4 +3916,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.11,<3.13"
-content-hash = "ebfb76998ddf71f765c67a10b5343419857c6840c90e402c7aa2c1848a96d1eb"
+content-hash = "28dea6e25edaec510f2958db4d46a8d3d64cfc2d6b1db39f9e6efddbf6ab54cb"

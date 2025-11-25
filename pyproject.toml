@@ -7,9 +7,9 @@ authors = ["Rachael Sexton <rtbs@nist.gov>"]
 [tool.poetry.dependencies]
 python = ">=3.11,<3.13"
 scipy = "^1.10"
-plum-dispatch = "^2.2.2"
 sparse = "^0.15.4"
 jaxtyping = "^0.3.3"
+plum-dispatch = "^2.6.0"
 
 [tool.poetry.group.dev.dependencies]
 ipykernel = "^6.9.2"

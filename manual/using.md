@@ -5,16 +5,27 @@ jupytext:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.16.7
+    jupytext_version: 1.17.2
 kernelspec:
-  display_name: Python (affinis)
-  language: python
   name: affinis
+  display_name: affinis
+  language: python
 ---
 
-# Using `affinis` for Relational Analysis
++++ {"editable": true, "slideshow": {"slide_type": ""}}
+
+# User-guide: `affinis` for Relational Analysis
 
 ```{code-cell} ipython3
+---
+editable: true
+slideshow:
+  slide_type: ''
+tags: [hide-input]
+render:
+  image:
+    width: 50%
+---
 import numpy as np
 import networkx as nx
 import seaborn as sns
@@ -22,26 +33,54 @@ import pandas as pd
 import matplotlib.pyplot as plt
 # rng = np.random.default_rng(42)
 sns.set_theme(style='white')
-```
+n_cols=15
+n_rows=30
+B = nx.bipartite.random_graph(n_cols,n_rows, .25, seed=2)
+n = list(B.nodes)[n_cols:]
 
-```{code-cell} ipython3
-B = nx.bipartite.random_graph(15,30, .25, seed=2)
-n = list(B.nodes)[15:]
-```
-
-```{code-cell} ipython3
 X = nx.bipartite.biadjacency_matrix(B, n).toarray()
-plt.spy(X)
-plt.axis('off')
+plt.figure(figsize=(4,7))
+plt.spy(X, marker='s')
+ax = plt.gca()
+# plt.axis('off');
+sns.despine(left=True, bottom=True)
+ax.xaxis.set_label_position('top') 
+ax.set(
+    xticks=range(n_cols), xticklabels=range(1,n_cols+1),
+    yticks=range(n_rows), yticklabels=range(1,n_rows+1),
+    xlabel="A", ylabel="B"
+);
 ```
 
 ```{code-cell} ipython3
-X.sum(axis=1)
+---
+editable: true
+slideshow:
+  slide_type: ''
+tags: [hide-input]
+---
+plt.figure(figsize=(4,7))
+pos = nx.bipartite_layout(B)
+nx.draw(B, pos=pos)
+nx.draw_networkx_labels(
+    B, pos, 
+    labels=dict(zip(
+        [n for n in B],
+        list(range(1,n_cols+1))+list(range(1,n_rows+1))
+    ))
+);
 ```
+
++++ {"editable": true, "slideshow": {"slide_type": ""}}
 
 ## Visualizing Relations
 
 ```{code-cell} ipython3
+---
+editable: true
+slideshow:
+  slide_type: ''
+---
 cooc = X.T@X
 
 plt.spy(cooc, marker='o', color='k')
@@ -49,6 +88,11 @@ plt.axis('off')
 ```
 
 ```{code-cell} ipython3
+---
+editable: true
+slideshow:
+  slide_type: ''
+---
 from affinis.plots import hinton
 
 hinton(cooc)

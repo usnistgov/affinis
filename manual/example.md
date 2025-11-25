@@ -5,16 +5,24 @@ jupytext:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.16.7
+    jupytext_version: 1.17.2
 kernelspec:
-  display_name: Python (affinis)
-  language: python
   name: affinis
+  display_name: affinis
+  language: python
 ---
+
++++ {"editable": true, "slideshow": {"slide_type": ""}}
 
 # Example: Reconstructing Colleague Networks with Forest Pursuit
 
 ```{code-cell} ipython3
+---
+editable: true
+slideshow:
+  slide_type: ''
+tags: [hide-input]
+---
 import numpy as np
 import networkx as nx
 import seaborn as sns
@@ -24,11 +32,18 @@ rng = np.random.default_rng(42)
 sns.set_theme(style='white')
 ```
 
++++ {"editable": true, "slideshow": {"slide_type": ""}}
+
 ## Problem Setting
 
 Synthesizing a network of colleagues that ask each other to join them on papers:
 
 ```{code-cell} ipython3
+---
+editable: true
+slideshow:
+  slide_type: ''
+---
 n_authors=25
 author_idx = pd.CategoricalIndex((f'author_{i:>02}' for i in range(1,n_authors+1)))
 
@@ -57,12 +72,21 @@ f = plt.figure(figsize=(5,4)).patch.set_alpha(0.)
 pos = draw_G(G)
 ```
 
++++ {"editable": true, "slideshow": {"slide_type": ""}}
+
 Alternatively, we can view this network as an adjacency matrix:
 
 ```{code-cell} ipython3
+---
+editable: true
+slideshow:
+  slide_type: ''
+---
 plt.spy(A, marker='.', color='r')
 plt.axis('off');
 ```
+
++++ {"editable": true, "slideshow": {"slide_type": ""}}
 
 Now we need to simulate the process of authors joining each list of authors. 
 
@@ -72,7 +96,17 @@ Now we need to simulate the process of authors joining each list of authors.
   - Each request comes from an existing author, able to ask any of their connected colleagues to join
 - Represent the authors on a given paper each week as "active"
 
++++ {"editable": true, "slideshow": {"slide_type": ""}}
+
+We can visualize these author-paper connections as binary "activation" relationships in a matrix, with one author-per-column, one paper-per-row:
+
 ```{code-cell} ipython3
+---
+editable: true
+slideshow:
+  slide_type: ''
+tags: [hide-input]
+---
 def sim_papers(n_weeks, L, jumps_param=0.1, rng=np.random.default_rng(2)): 
     Arw = ((L/np.diag(L)).pipe(lambda df: np.diag(np.diag(df))-df)*0.5)
     def sim_week(): 
@@ -99,34 +133,52 @@ X = np.vstack(list(sim_papers(
 Xdf = pd.DataFrame(X, columns=author_idx)
 
 # Xstack = np.vstack([X, -X])#.mean(axis=0)
-```
 
-We can visualize these author-paper connections as binary "activation" relationships in a matrix, with one author-per-column, one paper-per-row:
-
-```{code-cell} ipython3
 plt.spy(X)
-plt.axis('off')
+plt.axis('off');
 ```
+
++++ {"editable": true, "slideshow": {"slide_type": ""}}
 
 Number of papers each author participated on:
 
 ```{code-cell} ipython3
+---
+editable: true
+slideshow:
+  slide_type: ''
+---
 plt.figure(figsize=(4,2))
 sns.histplot(Xdf.sum(axis=0), discrete=True)
 ```
 
++++ {"editable": true, "slideshow": {"slide_type": ""}, "tags": ["hide-input", "remove-stderr"]}
+
 Number of authors on each paper:
 
 ```{code-cell} ipython3
+---
+editable: true
+slideshow:
+  slide_type: ''
+tags: [hide-input, remove-stderr]
+---
 plt.figure(figsize=(4,2))
 sns.histplot(Xdf.sum(axis=1), discrete=True)
 ```
+
++++ {"editable": true, "slideshow": {"slide_type": ""}}
 
 ## Association functions
 
 The core of the `affinis` library lives within the `affinis.associations` module.
 
 ```{code-cell} ipython3
+---
+editable: true
+slideshow:
+  slide_type: ''
+---
 from affinis.associations import coocur_prob, ochiai
 from affinis.plots import hinton
 
@@ -139,11 +191,21 @@ plt.spy(L, marker='.', color='r')
 ```
 
 ```{code-cell} ipython3
+---
+editable: true
+slideshow:
+  slide_type: ''
+---
 hinton(csim)
 plt.spy(L, marker='.', color='r')
 ```
 
 ```{code-cell} ipython3
+---
+editable: true
+slideshow:
+  slide_type: ''
+---
 from affinis.associations import (
     coocur_prob,
     odds_ratio,
@@ -166,6 +228,11 @@ from affinis.utils import (
 ```
 
 ```{code-cell} ipython3
+---
+editable: true
+slideshow:
+  slide_type: ''
+---
 def prox_to_laplacian(K):
     A = -_sq(_sq(K))
     np.fill_diagonal(A,-A.sum(axis=0))
@@ -194,6 +261,11 @@ for n, (lab, Aest) in enumerate(baselines.items()):
 ```
 
 ```{code-cell} ipython3
+---
+editable: true
+slideshow:
+  slide_type: ''
+---
 from affinis.associations import forest_pursuit_edge
 
 hinton(forest_pursuit_edge(X, pseudocts=psct))
@@ -201,6 +273,11 @@ hinton(forest_pursuit_edge(X, pseudocts=psct))
 ```
 
 ```{code-cell} ipython3
+---
+editable: true
+slideshow:
+  slide_type: ''
+---
 from contingency import Contingent
 from contingency.plots import PR_contour
 
@@ -209,6 +286,11 @@ m_mi = Contingent.from_scalar(_sq(A).astype(bool), _sq(baselines['mutualinfo']))
 ```
 
 ```{code-cell} ipython3
+---
+editable: true
+slideshow:
+  slide_type: ''
+---
 plt.plot(m_fp.weights, m_fp.mcc)
 plt.plot(m_mi.weights, m_mi.mcc)
 
@@ -216,6 +298,11 @@ m_fp.expected('mcc'), m_mi.expected('mcc')
 ```
 
 ```{code-cell} ipython3
+---
+editable: true
+slideshow:
+  slide_type: ''
+---
 PR_contour()
 plt.step(m_fp.recall, m_fp.precision, where='post')
 plt.step(m_mi.recall, m_mi.precision, where='post')
@@ -223,6 +310,11 @@ m_fp.expected('aps'), m_mi.expected('aps')
 ```
 
 ```{code-cell} ipython3
+---
+editable: true
+slideshow:
+  slide_type: ''
+---
 
 ```
 

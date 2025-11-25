@@ -9,6 +9,7 @@ jupyter-build:
     - pip install poetry
     - poetry install
     - source `poetry env info --path`/bin/activate  
+    - poetry run python -m ipykernel install --user --name affinis
   script:
     - jupyter-book clean manual
     - jupyter-book build manual
