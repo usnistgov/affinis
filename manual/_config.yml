@@ -57,9 +57,19 @@ sphinx:
       scale: 50
     html_theme_options: 
       home_page_in_toc: true
+      navbar_center:
+        - "header.html"
+      footer_start:
+        - "footer.html"
       logo:
         image_light: logo.png
         image_dark: logo-dark.png
+    templates_path: "_templates"
+    html_css_files:
+      - "nist-combined.css"
+    #   - "https://pages.nist.gov/nist-header-footer/css/nist-combined.css"
+    # html_js_files:
+    #   - "https://pages.nist.gov/nist-header-footer/js/nist-header-footer-v-2.0.js"
 parse:
   myst_enable_extensions: 
     - dollarmath

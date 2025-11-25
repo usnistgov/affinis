@@ -1,0 +1,15 @@
+/**
+ * @file
+ * Patch for Jupyter-book navbar==header
+ *
+ */
+
+/* navbar Styles */
+.bd-header {
+  background-color: #222832 !important;
+}
+
+
+.nist-header__logo-link{
+  text-decoration:none;
+}
