@@ -5,11 +5,11 @@ jupytext:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.17.2
+    jupytext_version: 1.16.7
 kernelspec:
-  name: affinis
-  display_name: affinis
+  display_name: Python (affinis)
   language: python
+  name: affinis
 ---
 
 # Example: Reconstructing Colleague Networks with Forest Pursuit
@@ -91,7 +91,7 @@ def sim_papers(n_weeks, L, jumps_param=0.1, rng=np.random.default_rng(2)):
 # n_obs ~ neg_binom(2, 1/n_nodes)
 # n_jumps ~ geom(2/n_nodes)
 X = np.vstack(list(sim_papers(
-    50, 
+    52, 
     pd.DataFrame(L, columns=author_idx, index=author_idx), 
     0.05,
     #  rng=rng
@@ -197,7 +197,33 @@ for n, (lab, Aest) in enumerate(baselines.items()):
 from affinis.associations import forest_pursuit_edge
 
 hinton(forest_pursuit_edge(X, pseudocts=psct))
-plt.spy(A, marker='.', color='r')
+# plt.spy(A, marker='.', color='r')
+```
+
+```{code-cell} ipython3
+from contingency import Contingent
+from contingency.plots import PR_contour
+
+m_fp = Contingent.from_scalar(_sq(A).astype(bool), _sq(forest_pursuit_edge(X, pseudocts=psct)))
+m_mi = Contingent.from_scalar(_sq(A).astype(bool), _sq(baselines['mutualinfo']))
+```
+
+```{code-cell} ipython3
+plt.plot(m_fp.weights, m_fp.mcc)
+plt.plot(m_mi.weights, m_mi.mcc)
+
+m_fp.expected('mcc'), m_mi.expected('mcc')
+```
+
+```{code-cell} ipython3
+PR_contour()
+plt.step(m_fp.recall, m_fp.precision, where='post')
+plt.step(m_mi.recall, m_mi.precision, where='post')
+m_fp.expected('aps'), m_mi.expected('aps')
+```
+
+```{code-cell} ipython3
+
 ```
 
 ```{code-cell} ipython3

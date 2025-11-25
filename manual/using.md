@@ -5,11 +5,11 @@ jupytext:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.17.2
+    jupytext_version: 1.16.7
 kernelspec:
-  name: affinis
-  display_name: affinis
+  display_name: Python (affinis)
   language: python
+  name: affinis
 ---
 
 # Using `affinis` for Relational Analysis
