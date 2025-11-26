@@ -2,7 +2,7 @@
 # Learn more at https://jupyterbook.org/customize/config.html
 
 title: "Library Reference: Affinis"
-author: Rachael Sexton, NIST EL SID
+author: Dr. Rachael Sexton
 logo: logo.png
 
 only_build_toc_files: true
@@ -23,16 +23,9 @@ bibtex_bibfiles:
 
 # Information about where the book exists on the web
 repository:
-  url: https://github.com/executablebooks/jupyter-book  # Online location of your book
+  url: https://github.com/usnistgov/affinis  # Online location of your book
   path_to_book: manual # Optional path to your book, relative to the repository root
   branch: main  # Which branch of the repository should be used when creating links (optional)
-
-# Add GitHub buttons to your book
-# See https://jupyterbook.org/customize/config.html#add-a-link-to-your-repository
-html:
-  use_issues_button: true
-  use_repository_button: true
-
 
 sphinx:
   extra_extensions:
@@ -56,14 +49,24 @@ sphinx:
     nb_render_image_options:
       scale: 50
     html_theme_options: 
+      # use_issues_button: true
+      # use_repository_button: true
       home_page_in_toc: true
       navbar_center:
         - "header.html"
       footer_start:
         - "footer.html"
+      extra_footer: |
+        <p><em>
+        This material is declared a work of the U.S. Government and is not subject to copyright protection in the United States.
+        </em></p>
+        <p><em>
+        Approved for public release; distribution is unlimited.
+        </em></p>
       logo:
         image_light: logo.png
         image_dark: logo-dark.png
+    html_show_copyright: false
     templates_path: "_templates"
     html_css_files:
       - "nist-combined.css"
