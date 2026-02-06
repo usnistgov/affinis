@@ -2,43 +2,43 @@
 from __future__ import annotations
 import numpy as np
 from scipy.sparse.csgraph import minimum_spanning_tree, shortest_path, reconstruct_path
-from scipy.sparse import coo_array, issparse, sparray
+from scipy.sparse import coo_array, issparse
 import sparse
-from jaxtyping import Bool, Num
-from typing import TypeAlias
 from .utils import (
     _sq,
     _outer,
     _sparse_directed_to_symmetric,
-    groupby_col0,
+    # groupby_col0,
+    csr_rows_idx,
     complete_edgelist_on_nodes,
     sq_ij_e,
     edge_weights_to_laplacian,
     _norm_diag,
 )
+from .types import FeatMat, SimsMat, FPopts
 from .priors import pseudocount, PsdCts
 from .distance import adjusted_forest_dists
 
-__doc__ = """
-All functions in this module take in data as design matrices
-(i.e. observations x features), and return a feature association measure 
-(i.e. features x features). 
-
-Note that some of these functions return valid adjacency matrices (e.g. a feature 
-is not associated to itself), while others return covariance or correlations (features 
-are partially or fully correlated to themselves). 
-
-Where appropriate, the methods here allow for additive/laplace smoothing, even in cases 
-where this is not traditionally done (like cosine similarity). We give interpretations
-of meaning that allow for this, where we can.
-"""
+__all__ = [
+    "coocur_prob",
+    "odds_ratio",
+    "mutual_information",
+    "chow_liu",
+    "yule_y",
+    "yule_q",
+    "ochiai",
+    "binary_cosine_similarity",
+    "resource_project",
+    "high_salience_skeleton",
+    "forest_pursuit",
+    "forest_pursuit_cts",
+    "forest_pursuit_edge",
+    "forest_pursuit_interaction",
+       
+]
 
 # TODO: define type signatures by array shapes
 # TODO: dispatch on dataframes, static-frames, etc.
-
-Arr: TypeAlias = sparse.SparseArray | sparray | np.ndarray
-FeatMat: TypeAlias = Bool[Arr, "obs feat"]
-SimsMat: TypeAlias = Num[Arr, "feat feat"]
 
 
 def _gram(X1, X2):
@@ -217,9 +217,10 @@ def ochiai(X: FeatMat, pseudocts: PsdCts = 0.5) -> SimsMat:
     so instead we approximate it as a psuedo-variable  having the geometric average of
     two original (conditional) exposure rates
 
-    .. math::
+    $$
         \sqrt{x_{ii},x_{jj}}
-
+    $$
+    
     This interpretation has a nice side-effect of letting us "smooth" the measure with
     laplace/additive pseudocounts on each bernoulli(-ish) "co-occurrence variable".
 
@@ -289,21 +290,22 @@ def resource_project(
     return sym_func(P, P.T)
 
 
-def high_salience_skeleton(X: FeatMat, prior=ochiai, pseudocts: PsdCts = "min-connect"):
+def high_salience_skeleton(X: FeatMat, prior_dists:SimsMat|None=None, pseudocts: PsdCts = "min-connect"):
     """Backboning technique from Grady et al. (2012)
     Calculates shortest paths from every node, and counts the
     number of trees each edge ended up being used in.
 
     Args:
       X: feature matrix
-      prior:  (Default value = ochiai) callable to calculate distances for shortest paths
+      prior:  (Default = -log(cos)) prior distances for shortest paths
       pseudocts:  (Default value = "min-connect")
 
     Returns: (smoothed/beta bernoulli) parameters for shortest path occurrences.
 
     """
-    est_dists = np.abs(-np.log(prior(X, pseudocts=pseudocts)))
-    d, pred = shortest_path(est_dists, return_predecessors=True)
+    if prior_dists is None:
+        prior_dists = np.abs(-np.log(ochiai(X, pseudocts=pseudocts)))
+    d, pred = shortest_path(prior_dists, return_predecessors=True)
     E_obs = np.array(
         [
             _sq(
@@ -344,10 +346,10 @@ def _spanning_forests_obs_bootstrap(X, prior_dists=None, edge_priors=False, beta
         
     # N_obs = X.toarray() if issparse(X) else X
     N_obs = sparse.COO.from_scipy_sparse(X) if issparse(X) else sparse.COO(X)
-    N_activations = groupby_col0(N_obs.coords.T)
+    N_activations = csr_rows_idx(N_obs.tocsr())
     E_activations = [
         _pursue_tree_basis(prior_dists, nodes, edge_priors=edge_priors, beta=beta)
-        for nodes in N_activations
+        if nodes.size>0 else nodes for nodes in N_activations
     ]
 
     E_coords = (
@@ -372,7 +374,7 @@ def _spanning_forests_obs_bootstrap(X, prior_dists=None, edge_priors=False, beta
 
 
 
-def forest_pursuit_cts(X: FeatMat, prior_dists=None) -> SimsMat:
+def forest_pursuit_cts(X: FeatMat, prior_dists:SimsMat|None=None) -> SimsMat:
     """Point estimate for number of actual edge activations, rather than
     node-node co-occurrences.
     Uses the Empirical Bayes estimate of the Spanning Forest Density
@@ -423,7 +425,7 @@ def expected_forest_maximization(
         
 
 def forest_pursuit_edge(
-    X: FeatMat, prior_dists=None, pseudocts: PsdCts = "min-connect"
+    X: FeatMat, prior_dists:SimsMat|None=None, pseudocts: PsdCts = "min-connect"
 ) -> SimsMat:
     """point estimate for edge-activation probability, conditional on
     both nodes being a priori activated.
@@ -445,7 +447,7 @@ def forest_pursuit_edge(
 
 def forest_pursuit_interaction(
     X: FeatMat,
-    prior_dists=None,
+    prior_dists:SimsMat|None=None,
     precalc_prob: SimsMat | None = None,
     pseudocts: PsdCts = "min-connect",
 ) -> SimsMat:
@@ -474,6 +476,24 @@ def forest_pursuit_interaction(
     uv_prob = _sq(coocur_prob(X, pseudocts=pseudocts))
     e_margP = e_prob * uv_prob
     return _sq(e_margP)
+
+
+def forest_pursuit(
+    X: FeatMat,
+    mode:FPopts="edge-prob",
+    pseudocts:PsdCts = "min-connect",
+    prior_dists:SimsMat|None=None,
+    **efm_kws    
+):
+    match mode:
+        case 'edge-prob':
+            return forest_pursuit_edge(X, prior_dists=prior_dists, pseudocts=pseudocts)
+        case 'counts':
+            return forest_pursuit_cts(X, prior_dists=prior_dists)
+        case 'forest-max':
+            return expected_forest_maximization(X, **efm_kws)
+        case 'interaction':
+            return forest_pursuit_interaction(X, prior_dists, pseudocts=pseudocts)
 
 
 def forest_pursuit_normdegs(X, prior_dists=None, pseudocts="min-connect"):

@@ -5,13 +5,14 @@ from typing import Callable, Literal, TypeAlias
 import numpy as np
 from jaxtyping import Num
 from affinis.utils import _sq
+from affinis.types import Number, PsdCts
 
-Number: TypeAlias = float | int
 ElemWise: TypeAlias = Num[np.ndarray, "*elems"]
-ElemReduceFunc: TypeAlias = Callable[[ElemWise, ElemWise], ElemWise]
+"""generic batched typed array"""
 
-PsdCtOpts:TypeAlias = Literal["min-connect","zero-sum"]
-PsdCts: TypeAlias = tuple[Number, Number] | tuple[PsdCtOpts, Number] | PsdCtOpts | Number
+ElemReduceFunc: TypeAlias = Callable[[ElemWise, ElemWise], ElemWise]
+"""merges two arrays into one e.g. a numerator and denominator"""
+
 
 def _safe_div(num: ElemWise, den: ElemWise) -> ElemWise:
     return np.divide(
@@ -22,22 +23,14 @@ def _safe_div(num: ElemWise, den: ElemWise) -> ElemWise:
     )
 
 
-@dispatch.abstract
-def pseudocount(
-    prior: PsdCts
-) -> ElemReduceFunc:
-    """Additive binomial smoothing via beta prior (beta-binomial)"""
-    ...
-
-
 @dispatch
 def pseudocount(prior: Number) -> ElemReduceFunc:
     """additiv smoothing binomial with symmetric beta prior (a = b) 
     
     Common cases for a:
     
-    - Haldane: \t 0.
-    - Laplace: \t 1.
+    - Haldane: \t 0.0
+    - Laplace: \t 1.0
     - Jeffreys: \t 0.5
 
     Args:
@@ -89,9 +82,10 @@ def pseudocount(prior: Literal["min-connect"]) -> ElemReduceFunc:
     (limiting) modes being at 0,1.
     If a complete graph has n(n-2)/2 edges, while a min. connected one has n-1, then
     we can bias toward non-edges such that the least-likely p is the ratio 
-    
-    .. math::
+
+    $$
         \frac{1-(n-1)}{\frac{n*(n-1)}{2}}
+    $$
     
     This comes out to a=2/n, b=1-2/n, so 
 
@@ -153,3 +147,11 @@ def pseudocount(
         return a_n
 
     return _beta_binom_post
+
+@dispatch.abstract
+def pseudocount(
+    prior: PsdCts
+) -> ElemReduceFunc:
+    """Additive binomial smoothing via beta prior (beta-binomial)"""
+    ...
+
