@@ -297,7 +297,7 @@ def high_salience_skeleton(X: FeatMat, prior_dists:SimsMat|None=None, pseudocts:
 
     Args:
       X: feature matrix
-      prior:  (Default = -log(cos)) prior distances for shortest paths
+      prior_dists:  (Default = -log(cos)) prior distances for shortest paths
       pseudocts:  (Default value = "min-connect")
 
     Returns: (smoothed/beta bernoulli) parameters for shortest path occurrences.
@@ -485,6 +485,7 @@ def forest_pursuit(
     prior_dists:SimsMat|None=None,
     **efm_kws    
 ):
+    """Estimate conditional dependencies using the Forest Pursuit algorithm"""
     match mode:
         case 'edge-prob':
             return forest_pursuit_edge(X, prior_dists=prior_dists, pseudocts=pseudocts)
