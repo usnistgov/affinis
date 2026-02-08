@@ -1,14 +1,14 @@
 ---
 jupytext:
-  formats: md:myst
+  formats: md:myst,ipynb
   text_representation:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.17.2
+    jupytext_version: 1.20.0
 kernelspec:
   name: affinis
-  display_name: affinis
+  display_name: Python (affinis)
   language: python
 ---
 
@@ -82,8 +82,8 @@ editable: true
 slideshow:
   slide_type: ''
 ---
-plt.spy(A, marker='.', color='r')
-plt.axis('off');
+from affinis.plots import hinton
+hinton(A)
 ```
 
 +++ {"editable": true, "slideshow": {"slide_type": ""}}
@@ -134,8 +134,8 @@ Xdf = pd.DataFrame(X, columns=author_idx)
 
 # Xstack = np.vstack([X, -X])#.mean(axis=0)
 
-plt.spy(X)
-plt.axis('off');
+hinton(X)
+# plt.axis('off');
 ```
 
 +++ {"editable": true, "slideshow": {"slide_type": ""}}
@@ -187,7 +187,7 @@ cooc = coocur_prob(X, pseudocts=0.)
 csim = ochiai(X, pseudocts=0.)
 
 hinton(cooc)
-plt.spy(L, marker='.', color='r')
+hinton(L)
 ```
 
 ```{code-cell} ipython3
