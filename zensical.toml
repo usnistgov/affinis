@@ -26,8 +26,13 @@ nav = [
   # },
   { "API" = [
         'api/associations.md',
+        'api/plots.md',
         'api/priors.md',
+        'api/proximity.md',
+        'api/distance.md',
+        'api/filters.md',
         'api/types.md',
+        
   ]},
 ]
 # nav = [
@@ -35,7 +40,13 @@ nav = [
 #   { "Markdown in 5min" = "markdown.md" },
 # ]
 #extra_css = ["stylesheets/extra.css"]
-extra_javascript = ["javascripts/mathjax.js"]
+extra_javascript = [
+  "javascripts/mathjax.js",
+  "https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js"  
+]
+
+[project.markdown_extensions.pymdownx.arithmatex]
+generic = true
 
 [project.theme]
 

@@ -13,3 +13,23 @@ of meaning that allow for this, where we can.
     options: 
       parameter_headings: false
       members_order: [__all__]
+      filters:
+        - "!^_"
+        - "^__"
+        - "!forest_pursuit_cts"
+        - "!forest_pursuit_edge"
+        - "!forest_pursuit_interaction"
+        - "!expected_forest_maximization"
+
+
+## Forest Pursuit Modes
+
+For the sake of completeness, we provide the underlying functions for each of the `forest_pursuit` modes, here. 
+
+::: affinis.associations.forest_pursuit_cts
+
+::: affinis.associations.forest_pursuit_edge
+
+::: affinis.associations.forest_pursuit_interaction
+
+::: affinis.associations.expected_forest_maximization
