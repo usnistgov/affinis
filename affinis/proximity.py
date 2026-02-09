@@ -1,21 +1,23 @@
 import numpy as np
 from .utils import _fast_PD_inverse, _norm_diag
+from .types import SimsMat 
 
-
-def forest(L, beta=1):
+def forest(L:SimsMat, beta:float=1):
     r"""relative forest accessibilities
     
-    .. math:: 
-        Q = (I+ \beta L)^{-1}
+    $$
+    Q = (I+ \beta L)^{-1}
+    $$
     
     Gauranteed to be PD, stochastic, and strictly positive for connected graphs.
     For disconnected graphs, a q_ij=0 means no paths exist between nodes i,j.
 
     For each entry of Q, 
     
-    .. math:: 
-        q_{ij}=\frac{\varepsilon(\mathcal{F}^{ij})}{\varepsilon(\mathcal{F})}
-     
+    $$
+    q_{ij}=\frac{\varepsilon(\mathcal{F}^{ij})}{\varepsilon(\mathcal{F})}
+    $$ 
+
     which is the fraction of spanning forests on the graph of L where i,j are 
     in the same spanning tree, rooted at i. 
 
@@ -25,7 +27,7 @@ def forest(L, beta=1):
 
     return _fast_PD_inverse(np.eye(L.shape[0]) + beta * L)
 
-def forest_correlation(L, beta=1.):
+def forest_correlation(L:SimsMat, beta=1.):
     """ Re-scaling of forest matrix to have unit diagonal entries.
     
     If Q=q_ij gives the fraction of spanning forests where i,j share a 
@@ -36,8 +38,8 @@ def forest_correlation(L, beta=1.):
     """
     return _norm_diag(forest(L,beta=beta))
 
-def sinkhorn(A, i=0, err=1e-6, it_max=1000):
-    """ Make matrix A doubly-stochastic, if possible. 
+def sinkhorn(A:SimsMat, i:int=0, err:float=1e-6, it_max:int=1000):
+    """ Make matrix A doubly-stochastic (rows/cols sum to 1), if possible. 
     
     Uses sinkhorn-knop (iterated proportional fitting) to project an n x n matrix A 
     onto the closest point in the Birkhoff polytope.  

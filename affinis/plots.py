@@ -1,9 +1,23 @@
 import matplotlib.pyplot as plt
+from matplotlib.axes import Axes
 import numpy as np
-from scipy.sparse import coo_array, issparse
+from jaxtyping import Num
+from scipy.sparse import coo_array, issparse,sparray
 
-def hinton(A, ax=None, marker='s'): 
-    """Draw Hinton diagram for visualizing a weight matrix."""
+def hinton(A:Num[np.ndarray|sparray, "a b"], ax:Axes|None=None, marker:str='s'): 
+    """Draw Hinton diagram for visualizing a 2-D matrix.
+    
+    This has a significant speed-up over the looping version from the
+    [matplotlib cookbook](https://matplotlib.org/stable/gallery/specialty_plots/hinton_demo.html),
+    since we utilize the `Axes.scatter` function, along with some clever
+    math to determine marker scaling to fill the canvas correctly. 
+
+    Args:
+      A: 2-D matrix to visualize
+      ax: Optional pre-defined axis to plot on
+      marker: Any valid [`matplotlib.markers`](https://matplotlib.org/stable/api/markers_api.html#module-matplotlib.markers) option.
+
+    """
     A = A if issparse(A) else coo_array(A)
 
     i,j = A.coords[1]+0.5, A.coords[0]+0.5

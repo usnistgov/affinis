@@ -18,6 +18,8 @@ from .utils import (
 from .types import FeatMat, SimsMat, FPopts
 from .priors import pseudocount, PsdCts
 from .distance import adjusted_forest_dists
+from .proximity import sinkhorn
+from .filter import min_connected_filter
 
 __all__ = [
     "coocur_prob",
@@ -28,18 +30,23 @@ __all__ = [
     "yule_q",
     "ochiai",
     "binary_cosine_similarity",
+    "hyperbolic_project",
     "resource_project",
     "high_salience_skeleton",
-    "forest_pursuit",
-    "forest_pursuit_cts",
-    "forest_pursuit_edge",
-    "forest_pursuit_interaction",
-       
+    "doubly_stochastic_filter",
+    "forest_pursuit",       
 ]
 
 # TODO: define type signatures by array shapes
 # TODO: dispatch on dataframes, static-frames, etc.
 
+def _safe_div(num, den):
+    return np.divide(
+        num,
+        den,
+        out=np.zeros_like(num, dtype=float),
+        where=den != 0,
+    )
 
 def _gram(X1, X2):
     grammian = X1.T @ X2
@@ -51,7 +58,7 @@ def coocur_prob(X: FeatMat, pseudocts: PsdCts = 0.5) -> SimsMat:
 
     Args:
       X: feature matrix     
-      pseudocts:  (Default value = 0.5)
+      pseudocts:  
 
     """
 
@@ -111,23 +118,41 @@ def _binary_contingency(X):
 
 
 def odds_ratio(X: FeatMat, pseudocts: PsdCts = 0.5) -> SimsMat:
-    """Ratio of the odds of a true pos/neg to false pos/neg
-
+    r"""Ratio of the odds of a true pos/neg to false pos/neg
+    
     For associations, we replace pos/neg and true/false with
-    a=yes/no and b=yes/no.
+    a=1/0 b=1/0, which gives odds ratio as:
+    
+    $$
+    \text{OR}=\frac{p_{11}p_{00}}{p_{01}p_{10}}
+    $$
+
+    Args:
+      X:
+      pseudocts:
     """
     a, b, c, d = _contingency_prob(X, pseudocts=pseudocts)
     return _sq(a * d / (b * c)) + np.eye(X.shape[1])
 
 
 def mutual_information(X: FeatMat, pseudocts: PsdCts = 0.5) -> SimsMat:
-    """Mutual Information over binary random variables
+    r"""Mutual Information over binary random variables
 
     For use in e.g. Chow-Liu Trees
 
+
+    An estimate for the mutual information (i.e., between the sample
+    distributions) can be derived from the marginals, as with
+    OR/Yule's Q/Y/etc., though it is more compactly represented as a
+    pairwise sum over the domains of each distribution being compared:     
+
+    $$
+    \text{MI}(x_i,x_j)\approx \sum_{i,j\in[0,1]} p_{ij} \log \left( \frac{p_{ij}}{p_{i\bullet}p_{\bullet j}} \right) 
+    $$
+
     Args:
         X: feature matrix
-        pseudocts: (Default value = 0.5) Assumed to apply to contingency table cts
+        pseudocts:  Assumed to apply to contingency table cts
 
     Returns:
 
@@ -160,7 +185,7 @@ def chow_liu(X: FeatMat, pseudocts: PsdCts = 0.5) -> SimsMat:
 
     Args:
       X: feature matrix
-      pseudocts:  (Default value = 0.5)
+      pseudocts:  
 
     Returns: Adjacency matrix of the Chow Liu MST
 
@@ -176,13 +201,19 @@ def chow_liu(X: FeatMat, pseudocts: PsdCts = 0.5) -> SimsMat:
 
 
 def yule_y(X: FeatMat, pseudocts: PsdCts = 0.5) -> SimsMat:
-    """a.k.a. Coefficient of Colligation.
+    r"""a.k.a. Coefficient of Colligation.
 
-    mobius transform of the Odds Ratio to the range [-1,1]
+    Mobius transform of the Odds Ratio to the range [-1,1], scaled so that
+    transformed contingency table of each feature pair has unitary off-
+    diagonals and diagonal (associations) $sqrt{OR}$.
+
+    $$
+    Y=\frac{\sqrt{\text{OR}}-1}{\sqrt{\text{OR}}+1}
+    $$
 
     Args:
       X: feature matrix
-      pseudocts:  (Default value = 0.5)
+      pseudocts:  
 
     Returns: square matrix containing Yule's Y
 
@@ -194,13 +225,17 @@ def yule_y(X: FeatMat, pseudocts: PsdCts = 0.5) -> SimsMat:
 
 
 def yule_q(X: FeatMat, pseudocts: PsdCts = 0.5) -> SimsMat:
-    """a.k.a. Goodman & Kruskal's gamma for 2x2.
+    r"""a.k.a. Goodman & Kruskal's gamma for 2x2.
 
-    mobius transform of the Odds Ratio to the range [-1,1]
+    mobius transform of the Odds Ratio to the range [-1,1]:
+    
+    $$
+    Q = \frac{\text{OR}-1}{\text{OR}+1}
+    $$
 
     Args:
       X: feature matrix
-      pseudocts:  (Default value = 0.5)
+      pseudocts:  
 
     Returns: square matrix containing Yule's Q
 
@@ -212,21 +247,23 @@ def yule_q(X: FeatMat, pseudocts: PsdCts = 0.5) -> SimsMat:
 def ochiai(X: FeatMat, pseudocts: PsdCts = 0.5) -> SimsMat:
     r"""AKA cosine similarity on binary sets
 
-    This code illustrates the idea that we can interpret it as conditional probability:
-    The "exposure" of pairwise co-occurrences can't be larger than the sample size,
-    so instead we approximate it as a psuedo-variable  having the geometric average of
-    two original (conditional) exposure rates
+    Effectively an uncentered correlation, but for binary observations the "cosine similarity" is also called the _Ochiai Coefficient_ between two sets $A,B$, where binary "1" stands for an element belonging to the set.
+    See [Janson and Vegelius (1981)](https://doi.org/10.1007/bf00347601).
+
+    In our use case, we define measured as 
 
     $$
-        \sqrt{x_{ii},x_{jj}}
-    $$
-    
-    This interpretation has a nice side-effect of letting us "smooth" the measure with
-    laplace/additive pseudocounts on each bernoulli(-ish) "co-occurrence variable".
+    \frac{|A \cap B |}{\sqrt{|A||B|}}=\sqrt{p_{1\bullet}p_{\bullet 1}} \rightarrow  \frac{X^TX}{\sqrt{\mathbf{s}_i\mathbf{s}_i^T}}\quad \mathbf{s}_i = \sum_i \mathbf{x}_i
+    $$  
+
+    This interpretation of cosine similarity as the geometric mean of
+    conditional probabilities is particularly useful when trying to
+    approximate interaction rates, and especially to apply additive
+    smoothing. 
 
     Args:
       X: feature matrix
-      pseudocts:  (Default value = 0.5)
+      pseudocts:  
 
     Returns: square cosine similarity matrix (incl. ones in the diagonal)
 
@@ -244,7 +281,7 @@ def binary_cosine_similarity(X: FeatMat, pseudocts: PsdCts = 0.5) -> SimsMat:
 
     Args:
       X: feature matrix
-      pseudocts:  (Default value = 0.5)
+      pseudocts:
 
     Returns: cosine similarity on binary feature vectors
 
@@ -252,34 +289,59 @@ def binary_cosine_similarity(X: FeatMat, pseudocts: PsdCts = 0.5) -> SimsMat:
     return ochiai(X, pseudocts=pseudocts)
 
 
+
+def hyperbolic_project(
+    X:FeatMat, pseudocts:PsdCts=0.5
+)->SimsMat:
+    """
+    [Newman (2001)](https://doi.org/10.1103/physreve.64.016132)
+    TODO: add to tests and document
+
+    Note: passing a pseudocount currently does not have an effect,
+    as there is not a trivial way to interpret this bipartite projection
+    as a probability.
+
+    Args:
+      X:
+      pseudocts:
+
+    """
+    
+    reweight = _safe_div(X.T, (X.sum(axis=1)-1)).T  # right-stochastic bipartite
+    return _gram(reweight,X) 
+
+
 def resource_project(
     X: FeatMat, pseudocts: PsdCts = 0.5, sym_func=np.maximum
 ) -> SimsMat:
-    """bipartite project due to Zhao et al.
+    """Bipartite projection due to [Zhou et al (2007)](https://doi.org/10.1103/PhysRevE.76.046115).
 
-    Really just a step of sinkhorn-knopp on the bipartite adjacency
-    https://doc.rero.ch/record/8503/files/zhang_bnp.pdf
+    Goes one step further than hyperbolic projection, by viewing each
+    node as having some “amount” of a resource to spend, which gets
+    re-allocated by observational unit.
+    Can be interpreted as one step of iterative proportional fitting on the
+    bipartite adjacency matrix. 
 
-    For additive smoothing to work, we assume no smoothing is needed
-    for the "forward" projection (agents->artifacts), since we assume
-    no artifact has 0 agent participation, while some known agents may
-    have 0 (observed) artifact participation.
+    NOTE: For additive smoothing to work, we assume no smoothing is needed
+    for the "forward" projection (features->observations), since we assume
+    all observations have some feature participation,
+    while some features may have no (observed) observations.
 
-    by default, we symmetrize with "maximum", meaning that association is
+    By default, we symmetrize with "maximum", meaning that association is
     considered as the strongest of the directions it could take. This
     can be overridden with any function of two same-shaped arrays.
 
     Args:
-      X: featiure matrix
-      pseudocts:  (Default value = 0.5)
-      sym_func:  (Default value = np.maximum)
+      X:
+      pseudocts:
+      sym_func:  function to symmetrize the resulting association measure
 
     Returns: symmetrized "resource projection" similarities
 
     """
     psdct_func = pseudocount(pseudocts)
 
-    fwd = (X.T / X.sum(axis=1)).T  # right-stochastic bipartite
+    fwd = _safe_div(X.T, X.sum(axis=1)).T  # right-stochastic bipartite
     # bwd = psdct_func(X, X.sum(axis=0))
 
     # P = _gram(((X.T) / (X.sum(axis=1))).T, ((X) / (X.sum(axis=0))))
@@ -291,16 +353,14 @@ def resource_project(
 
 
 def high_salience_skeleton(X: FeatMat, prior_dists:SimsMat|None=None, pseudocts: PsdCts = "min-connect"):
-    """Backboning technique from Grady et al. (2012)
+    """Backboning technique from [Grady et al. (2012)](https://doi.org/10.1038/ncomms1847).
     Calculates shortest paths from every node, and counts the
     number of trees each edge ended up being used in.
 
     Args:
       X: feature matrix
-      prior_dists:  (Default = -log(cos)) prior distances for shortest paths
-      pseudocts:  (Default value = "min-connect")
-
-    Returns: (smoothed/beta bernoulli) parameters for shortest path occurrences.
+      prior_dists:  (Default = `-log(ochiai)`) prior distances for shortest paths
+      pseudocts: 
 
     """
     if prior_dists is None:
@@ -319,6 +379,34 @@ def high_salience_skeleton(X: FeatMat, prior_dists:SimsMat|None=None, pseudocts:
     hss = pseudocount(pseudocts)(E_obs.sum(axis=0), E_obs.shape[0])
     # hss = (E_obs.sum(axis=0) + pseudocts) / (E_obs.shape[0] + 2 * pseudocts)
     return _sq(hss)
+
+
+def doubly_stochastic_filter(
+    X:FeatMat,
+    pseudocts:PsdCts=0.5,
+    prior_sims:SimsMat|None=None,
+    **sink_kws
+)->SimsMat:
+    """From [P.B. Slater(2009)](https://doi.org/10.1073/pnas.0904725106),
+    
+    _“A two-stage algorithm for extracting the multiscale backbone of complex weighted networks”_
+
+    This implementation is effectively a wrappper around
+    [sinkhorn][affinis.proximity.sinkhorn] and
+    [min_connected_filter][affinis.filter.min_connected_filter] to
+    accomplish the "two stage" process used.
+
+    Args:
+      X:
+      prior_sims:  (Default will calculate cosine similarity)
+      sink_kws: kwargs to pass to `sinkhorn()`
+    """
+
+    if prior_sims is None:
+        prior_sims = ochiai(X, pseudocts=pseudocts)
+    ds = sinkhorn(prior_sims, **sink_kws)
+
+    return _sq(min_connected_filter(_sq(ds)))
 
 
 def _pursue_tree_basis(dists, nodes, edge_priors=False, beta=0.001):
@@ -352,10 +440,10 @@ def _spanning_forests_obs_bootstrap(X, prior_dists=None, edge_priors=False, beta
         if nodes.size>0 else nodes for nodes in N_activations
     ]
 
-    E_coords = (
+    E_coords = np.vstack((
         np.repeat(np.arange(N_obs.shape[0]), np.array([len(e) for e in E_activations])),
         np.concatenate(E_activations),
-    )
+    ))
     n = X.shape[1]
     m = n * (n - 1) // 2
     return coo_array(
@@ -393,14 +481,31 @@ def forest_pursuit_cts(X: FeatMat, prior_dists:SimsMat|None=None) -> SimsMat:
 
 def expected_forest_maximization(
     X: FeatMat,
-    prior_struct=None,
-    beta=0.001,
-    eps=1e-5,
-    max_iter=100,
-    verbose=False,
+    prior_struct:SimsMat=None,
+    beta:float=0.001,
+    eps:float=1e-5,
+    max_iter:int=100,
+    verbose:bool=False,
 ) -> SimsMat:
-    """ Expectation Maximization Scheme to recover structure
+    """Expectation Maximization Scheme to recover structure.
+
+    Shown to have minor accuracy improvement over vanilla Forest Pursuit,
+    at the cost of significantly decreased scalability, as it uses an
+    alternating-minimization scheme to jointly estimate edge activation
+    probabilities, _and_ network structure.
+
+    For more detail, see [Expected Forest Maximization](https://dissertation.rtbs.dev/content/part2/2-06-latent-forest-alloc.html#expected-forest-maximization). 
     
+    Args:
+      X: FeatMat: 
+      prior_struct:
+      beta:  
+      eps:  
+      max_iter: 
+      verbose:  
+
+    Returns:
+
     """
     if prior_struct is None:
         e_prob = _sq(forest_pursuit_edge(X))
@@ -484,8 +589,45 @@ def forest_pursuit(
     pseudocts:PsdCts = "min-connect",
     prior_dists:SimsMat|None=None,
     **efm_kws    
-):
-    """Estimate conditional dependencies using the Forest Pursuit algorithm"""
+)->SimsMat:
+    """Estimate conditional dependencies using the Forest Pursuit algorithm.
+
+    This is the original implementation, as tested in
+    [Rachael Sextons's dissertation (2025)](https://doi.org/10.13016/o252-lfmi)
+    For more details on how it works, see [Approximate Recovery in Near-linear Time by Forest Pursuit](https://dissertation.rtbs.dev/content/part2/2-05-forest-pursuit.html), and subsequent chapters for modifications and
+    descriptions of the "modes" presented here. 
+
+    Which mode you select determines how you will interpret the resulting
+    association scores.
+     
+    - If "edge-prob", FP will estimate the probability of an edge
+      being activated, _given_ you know the two nodes it connects
+      are known to be active. This is a formalization of what it means
+      for an edge to "exist" in the Desire-Path Density framing.
+      See [forest_pursuit_edge][affinis.associations.forest_pursuit_edge].
+    - If "counts", FP simply reports the estimated number of edge
+      activations found from spanning trees in rows of X.
+      See [forest_pursuit_cts][affinis.associations.forest_pursuit_cts].
+    - If "forest-max", use Expected Forest Maximization, an E-M scheme
+      to estimate the posterior probability of both the edge
+      activations _and_ the underlying graph structure, via
+      alternating minimization.
+      See [expected_forest_maximization][affinis.associations.expected_forest_maximization].
+    - If "interaction", re-weight the "edge-prob" values to be the
+      likelihood of observing an edge activation, _given_ the
+      observed data (useful e.g. for bayesian inference). 
+      See [forest_pursuit_interaction][affinis.associations.forest_pursuit_interaction].
+
+    Args:
+      X: 
+      mode:
+      pseudocts:
+      prior_dists:
+      **efm_kws: kwargs to pass to
+          [expected_forest_maximization][affinis.associations.expected_forest_maximization]
+          if that mode is selected. 
+
+    """
     match mode:
         case 'edge-prob':
             return forest_pursuit_edge(X, prior_dists=prior_dists, pseudocts=pseudocts)
@@ -497,7 +639,7 @@ def forest_pursuit(
             return forest_pursuit_interaction(X, prior_dists, pseudocts=pseudocts)
 
 
-def forest_pursuit_normdegs(X, prior_dists=None, pseudocts="min-connect"):
+def _forest_pursuit_normdegs(X, prior_dists=None, pseudocts="min-connect"):
     """DEPRECATED re-scaling of SFD Interraction probability that tends to
     move the highest-probability edges for each node toward 1.0.
 

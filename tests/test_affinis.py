@@ -4,10 +4,30 @@ import hypothesis.strategies as st
 import hypothesis.extra.numpy as hnp
 import pytest
 
-from affinis import associations as asc
+from affinis import associations as aff
 
 # def test_version():
 #     assert __version__ == "0.1.0"
+
+affinis_funcs = [
+    aff.binary_cosine_similarity,
+    aff.coocur_prob,
+    aff.ochiai,
+    aff.high_salience_skeleton,
+    aff.mutual_information,
+    aff.odds_ratio,
+    aff.yule_q,
+    aff.yule_y,
+    aff.forest_pursuit,
+    aff.forest_pursuit_cts,
+    aff.forest_pursuit_interaction,
+    aff.expected_forest_maximization,
+    aff.forest_pursuit_edge,
+    aff.chow_liu,
+    aff.resource_project,
+    aff.doubly_stochastic_filter,
+    aff.hyperbolic_project
+]
 
 @st.composite  
 def make_shapes(draw):
@@ -28,23 +48,7 @@ def make_bools(draw, shape=(2,5)):
 # @example((np.array([[0,1,0,1],[0,1,1,0]]))).xfail() #ints aren't bools
 @pytest.mark.parametrize(
     "assoc_func",
-    [
-        asc.binary_cosine_similarity,
-        asc.coocur_prob,
-        asc.ochiai,
-        asc.high_salience_skeleton,
-        asc.mutual_information,
-        asc.odds_ratio,
-        asc.yule_q,
-        asc.yule_y,
-        asc.forest_pursuit,
-        asc.forest_pursuit_cts,
-        asc.forest_pursuit_interaction,
-        asc.expected_forest_maximization,
-        asc.forest_pursuit_edge,
-        asc.chow_liu,
-        asc.resource_project
-    ]
+    affinis_funcs
                                   
 )
 @given(data=st.data())
