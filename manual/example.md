@@ -5,11 +5,11 @@ jupytext:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.17.2
+    jupytext_version: 1.19.1
 kernelspec:
   name: affinis
-  display_name: affinis
   language: python
+  display_name: affinis
 ---
 
 +++ {"editable": true, "slideshow": {"slide_type": ""}}
@@ -18,9 +18,9 @@ kernelspec:
 
 ```{code-cell} ipython3
 ---
-editable: true
 slideshow:
   slide_type: ''
+editable: true
 tags: [hide-input]
 ---
 import numpy as np
@@ -78,15 +78,15 @@ Alternatively, we can view this network as an adjacency matrix:
 
 ```{code-cell} ipython3
 ---
-editable: true
 slideshow:
   slide_type: ''
+editable: true
 ---
 plt.spy(A, marker='.', color='r')
 plt.axis('off');
 ```
 
-+++ {"editable": true, "slideshow": {"slide_type": ""}}
++++ {"slideshow": {"slide_type": ""}, "editable": true}
 
 Now we need to simulate the process of authors joining each list of authors. 
 
@@ -103,9 +103,9 @@ We can visualize these author-paper connections as binary "activation" relations
 ```{code-cell} ipython3
 ---
 editable: true
+tags: [hide-input]
 slideshow:
   slide_type: ''
-tags: [hide-input]
 ---
 def sim_papers(n_weeks, L, jumps_param=0.1, rng=np.random.default_rng(2)): 
     Arw = ((L/np.diag(L)).pipe(lambda df: np.diag(np.diag(df))-df)*0.5)
@@ -138,36 +138,36 @@ plt.spy(X)
 plt.axis('off');
 ```
 
-+++ {"editable": true, "slideshow": {"slide_type": ""}}
++++ {"slideshow": {"slide_type": ""}, "editable": true}
 
 Number of papers each author participated on:
 
 ```{code-cell} ipython3
 ---
-editable: true
 slideshow:
   slide_type: ''
+editable: true
 ---
 plt.figure(figsize=(4,2))
 sns.histplot(Xdf.sum(axis=0), discrete=True)
 ```
 
-+++ {"editable": true, "slideshow": {"slide_type": ""}, "tags": ["hide-input", "remove-stderr"]}
++++ {"slideshow": {"slide_type": ""}, "editable": true, "tags": ["hide-input", "remove-stderr"]}
 
 Number of authors on each paper:
 
 ```{code-cell} ipython3
 ---
 editable: true
+tags: [hide-input, remove-stderr]
 slideshow:
   slide_type: ''
-tags: [hide-input, remove-stderr]
 ---
 plt.figure(figsize=(4,2))
 sns.histplot(Xdf.sum(axis=1), discrete=True)
 ```
 
-+++ {"editable": true, "slideshow": {"slide_type": ""}}
++++ {"slideshow": {"slide_type": ""}, "editable": true}
 
 ## Association functions
 
@@ -179,15 +179,28 @@ editable: true
 slideshow:
   slide_type: ''
 ---
-from affinis.associations import coocur_prob, ochiai
-from affinis.plots import hinton
+import affinis.associations as aff 
+# import coocur_prob, ochiai
+# from affinis.plots import hinton 
 
-cooc = coocur_prob(X, pseudocts=0.)
 
-csim = ochiai(X, pseudocts=0.)
+cooc = aff.coocur_prob(X, pseudocts=0.)
 
-hinton(cooc)
-plt.spy(L, marker='.', color='r')
+csim = aff.ochiai(X, pseudocts=0.)
+
+sns.heatmap(cooc)
+# hinton(L)
+```
+
+```{code-cell} ipython3
+---
+slideshow:
+  slide_type: ''
+editable: true
+---
+# hinton(csim)
+sns.heatmap(csim)
+# plt.spy(L, marker='.', color='r')
 ```
 
 ```{code-cell} ipython3
@@ -196,8 +209,17 @@ editable: true
 slideshow:
   slide_type: ''
 ---
-hinton(csim)
-plt.spy(L, marker='.', color='r')
+# from affinis.associations import (
+#     coocur_prob,
+#     odds_ratio,
+#     mutual_information,
+#     chow_liu,
+#     yule_q, yule_y,
+#     ochiai,
+#     resource_project,
+#     high_salience_skeleton
+# )
+
 ```
 
 ```{code-cell} ipython3
@@ -206,48 +228,21 @@ editable: true
 slideshow:
   slide_type: ''
 ---
-from affinis.associations import (
-    coocur_prob,
-    odds_ratio,
-    mutual_information,
-    chow_liu,
-    yule_q, yule_y,
-    ochiai,
-    resource_project,
-    high_salience_skeleton
-)
-
-from affinis.utils import (
-    _norm_diag,
-    # _e_to_ij, 
-    # _std_incidence_vec, 
-    _sq, 
-    _outer,
-    sparse_adj_to_incidence,
-)
-```
-
-```{code-cell} ipython3
----
-editable: true
-slideshow:
-  slide_type: ''
----
-def prox_to_laplacian(K):
-    A = -_sq(_sq(K))
-    np.fill_diagonal(A,-A.sum(axis=0))
-    return A
+# def prox_to_laplacian(K):
+#     A = -_sq(_sq(K))
+#     np.fill_diagonal(A,-A.sum(axis=0))
+#     return A
 
 psct ='min-connect'
 # psct=0
 
 baselines = {
-    'cosine': ochiai(X, pseudocts=psct),
-    'resourceProj': resource_project(X),
-    'odds-ratio': odds_ratio(X, pseudocts=psct),
-    'yuleY':yule_y(X, pseudocts=psct),
-    'mutualinfo': mutual_information(X, pseudocts=psct),
-    'HSS': high_salience_skeleton(X)
+    'cosine': aff.ochiai(X, pseudocts=psct),
+    'hyperbolic': aff.hyperbolic_project(X),
+    'odds-ratio': aff.odds_ratio(X, pseudocts=psct),
+    'doubly-stochastic':aff.doubly_stochastic_filter(X, pseudocts=psct),
+    'mutualinfo': aff.mutual_information(X, pseudocts=psct),
+    'HSS': aff.high_salience_skeleton(X, pseudocts=psct)
 }
 f,axs = plt.subplots(nrows=2, ncols=3, figsize=(10,6))
 
@@ -266,10 +261,9 @@ editable: true
 slideshow:
   slide_type: ''
 ---
-from affinis.associations import forest_pursuit_edge
-
-hinton(forest_pursuit_edge(X, pseudocts=psct))
+hinton(aff.forest_pursuit(X, pseudocts=psct))
 # plt.spy(A, marker='.', color='r')
+hinton(-A, marker='.')
 ```
 
 ```{code-cell} ipython3
@@ -280,21 +274,24 @@ slideshow:
 ---
 from contingency import Contingent
 from contingency.plots import PR_contour
+from scipy.spatial.distance import squareform
+y_true = squareform(A).astype(bool)
 
-m_fp = Contingent.from_scalar(_sq(A).astype(bool), _sq(forest_pursuit_edge(X, pseudocts=psct)))
-m_mi = Contingent.from_scalar(_sq(A).astype(bool), _sq(baselines['mutualinfo']))
+
+m_fp = Contingent.from_scalar(y_true, squareform(forest_pursuit_edge(X, pseudocts=psct)))
+m_compare = Contingent.from_scalar(y_true, squareform(baselines['doubly-stochastic']))
 ```
 
 ```{code-cell} ipython3
 ---
-editable: true
 slideshow:
   slide_type: ''
+editable: true
 ---
 plt.plot(m_fp.weights, m_fp.mcc)
-plt.plot(m_mi.weights, m_mi.mcc)
+plt.plot(m_compare.weights, m_compare.mcc)
 
-m_fp.expected('mcc'), m_mi.expected('mcc')
+m_fp.expected('mcc'), m_compare.expected('mcc')
 ```
 
 ```{code-cell} ipython3
@@ -305,15 +302,15 @@ slideshow:
 ---
 PR_contour()
 plt.step(m_fp.recall, m_fp.precision, where='post')
-plt.step(m_mi.recall, m_mi.precision, where='post')
-m_fp.expected('aps'), m_mi.expected('aps')
+plt.step(m_compare.recall, m_compare.precision, where='post')
+m_fp.expected('aps'), m_compare.expected('aps')
 ```
 
 ```{code-cell} ipython3
 ---
-editable: true
 slideshow:
   slide_type: ''
+editable: true
 ---
 
 ```

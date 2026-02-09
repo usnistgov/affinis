@@ -5,7 +5,7 @@ jupytext:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.17.2
+    jupytext_version: 1.19.1
 kernelspec:
   name: affinis
   display_name: affinis
@@ -17,11 +17,17 @@ kernelspec:
 # User-guide: `affinis` for Relational Analysis
 
 ```{code-cell} ipython3
+from affinis.priors import pseudocount
+
+pseudocount
+```
+
+```{code-cell} ipython3
 ---
-editable: true
 slideshow:
   slide_type: ''
 tags: [hide-input]
+editable: true
 render:
   image:
     width: 50%
@@ -89,9 +95,9 @@ plt.axis('off')
 
 ```{code-cell} ipython3
 ---
-editable: true
 slideshow:
   slide_type: ''
+editable: true
 ---
 from affinis.plots import hinton
 
