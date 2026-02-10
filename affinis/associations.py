@@ -590,10 +590,10 @@ def forest_pursuit(
     prior_dists:SimsMat|None=None,
     **efm_kws    
 )->SimsMat:
-    """Estimate conditional dependencies using the Forest Pursuit algorithm.
+    """Structure estimation under spreading-process assumption [(Sexton, 2025)](https://doi.org/10.13016/o252-lfmi)
 
-    This is the original implementation, as tested in
-    [Rachael Sextons's dissertation (2025)](https://doi.org/10.13016/o252-lfmi)
+    This is the original implementation, as demonstrated in
+    [Rachael Sextons's dissertation (2025)](https://dissertation.rtbs.dev/).
     For more details on how it works, see [Approximate Recovery in Near-linear Time by Forest Pursuit](https://dissertation.rtbs.dev/content/part2/2-05-forest-pursuit.html), and subsequent chapters for modifications and
     descriptions of the "modes" presented here. 
 

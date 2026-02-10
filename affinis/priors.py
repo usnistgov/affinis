@@ -155,6 +155,9 @@ def pseudocount(
       should be a tree, which has a number of edges linear in node-count
       (n-1) while the number of possible edges is quadratic (n choose 2).
 
+    NOTE: Unlike the other options, 'min-connect' assumes that the passed
+    arrays will have a shape that can be folded as a lower-triangle of a
+    square matrix (i.e. a _triangular number_, n-choose-2)
     
     Args:
         prior:PsdCts: beta priors (a,b), either explicit or implictly derived.
