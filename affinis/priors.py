@@ -51,26 +51,30 @@ def pseudocount(prior: tuple[Number, Number]) -> ElemReduceFunc:
 @dispatch(precedence=1)
 def pseudocount(prior: Literal["min-connect"]) -> ElemReduceFunc:
     r"""additive smoothing binomial with asymmetric prior biasing sparsity
+
+    NOTE: Requires triangular-number `n` (i.e. lower triangles of square matrix).
     
     If observations are trials over an array of graph edges, then
     the number of edges that are on or off in a graph is "zero sum" (one extra "on" means one less "off).
     So, the proportion of time we will be observing an "on" edge might be thought of as a Wiener
     Process, and thus follows a (generalized) arcsine distribution.
-    This means we need a "bathtub" prior a+b=1.
+    This means we need a "bathtub" prior `a+b=1`.
+    As it happens, the expected value for this will be `a`. 
     
-    For a concave beta (a,b < 1), the anti-mode is the least likely spot, with the two
-    (limiting) modes being at 0,1.
-    If a complete graph has n(n-2)/2 edges, while a min. connected one has n-1, then
-    we can bias toward non-edges such that the least-likely p is the ratio 
+    
+    If a complete graph has `n(n-2)/2` edges, while a min. connected one has `n-1`, then
+    we can bias toward sparsity such that the expected ratio of edges to possible edges
+    (and therefore the expected value of our bathtub prior) should be:   
 
     $$
-        \frac{1-(n-1)}{\frac{n*(n-1)}{2}}
+    \frac{(n-1)}{\frac{n*(n-1)}{2}}
     $$
     
-    This comes out to a=2/n, b=1-2/n, so 
+    This comes out to `a=2/n`, `b=1-2/n`, so 
 
-    .. math:: 
-        P(p|a,b) = \frac{\textrm{\#successes}+2/n}{\textrm{\#trials}+1}
+    $$
+    P(p|a,b) = \frac{\textrm{\#successes}+2/n}{\textrm{\#trials}+1}
+    $$
 
     Args:
       prior: "min-connect" 
