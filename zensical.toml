@@ -3,20 +3,21 @@
 site_name = "Documentation"
 
 site_description = "A new project generated from the default template project."
-site_author = "<your name here>"
+site_author = "Rachael Sexton"
 #site_url = "https://www.example.com/"
 
 copyright = """
-Copyright &copy; 2026 The authors
+Affinis and all of it's associated documentation are in the public domain (see the <a href="https://github.com/usnistgov/Affinis/blob/main/LICENSE.md"> license </a>)
 """
 nav = [
   {"Home" = "index.md"},  
   {"Installation" = "install.md"},
   { "User Guide" = [
-        "using/assoc.md",
-        "using/psdct.md"
+      "user-guide/using.md",
+        # "using/assoc.md",
+        # "using/psdct.md"
     ]},
-  {"Example" = "example.md"},
+  {"Examples" = ["case-studies/example.md"]},
 
     # [
         # "getting-started/01-installation.md",
@@ -101,12 +102,20 @@ toggle.name = "Switch to light mode"
 #logo = "lucide/smile"
 #repo = "lucide/smile"
 
-#[[project.extra.social]]
-#icon = "fontawesome/brands/github"
-#link = "https://github.com/user/repo"
+[[project.extra.social]]
+name = "USNISTGOV on GitHub"
+icon = "fontawesome/brands/github"
+link = "https://github.com/usnistgov/affinis"
 
-[project.plugins.macros]
-module_name = "docs/macros"
+
+[project.markdown_extensions.pymdownx.highlight]
+anchor_linenums = true
+line_spans = "__span"
+pygments_lang_class = true
+[project.markdown_extensions.pymdownx.inlinehilite]
+[project.markdown_extensions.pymdownx.snippets]
+[project.markdown_extensions.pymdownx.superfences]
+
 
 [project.plugins.mkdocstrings.handlers.python]
 inventories = ["https://docs.python.org/3/objects.inv"]
