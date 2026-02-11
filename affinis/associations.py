@@ -58,7 +58,7 @@ def coocur_prob(X: FeatMat, pseudocts: PsdCts = 0.5) -> SimsMat:
 
     Args:
       X: feature matrix     
-      pseudocts:  
+      pseudocts: additive smoothing parameter
 
     """
 
@@ -127,9 +127,12 @@ def odds_ratio(X: FeatMat, pseudocts: PsdCts = 0.5) -> SimsMat:
     \text{OR}=\frac{p_{11}p_{00}}{p_{01}p_{10}}
     $$
 
+    Additive smoothing is applied via the initial calculation of
+    conditional probabilities.
+    
     Args:
-      X:
-      pseudocts:
+      X: feature matrix
+      pseudocts: additive smoothing parameter
     """
     a, b, c, d = _contingency_prob(X, pseudocts=pseudocts)
     return _sq(a * d / (b * c)) + np.eye(X.shape[1])
@@ -150,9 +153,12 @@ def mutual_information(X: FeatMat, pseudocts: PsdCts = 0.5) -> SimsMat:
     \text{MI}(x_i,x_j)\approx \sum_{i,j\in[0,1]} p_{ij} \log \left( \frac{p_{ij}}{p_{i\bullet}p_{\bullet j}} \right) 
     $$
 
+    Additive smoothing is applied via the initial calculation of
+    conditional probabilities.
+    
     Args:
         X: feature matrix
-        pseudocts:  Assumed to apply to contingency table cts
+        pseudocts:  additive smoothing parameter
 
     Returns:
 
@@ -185,7 +191,7 @@ def chow_liu(X: FeatMat, pseudocts: PsdCts = 0.5) -> SimsMat:
 
     Args:
       X: feature matrix
-      pseudocts:  
+      pseudocts: additive smoothing parameter
 
     Returns: Adjacency matrix of the Chow Liu MST
 
@@ -213,7 +219,7 @@ def yule_y(X: FeatMat, pseudocts: PsdCts = 0.5) -> SimsMat:
 
     Args:
       X: feature matrix
-      pseudocts:  
+      pseudocts: additive smoothing parameter
 
     Returns: square matrix containing Yule's Y
 
@@ -235,7 +241,7 @@ def yule_q(X: FeatMat, pseudocts: PsdCts = 0.5) -> SimsMat:
 
     Args:
       X: feature matrix
-      pseudocts:  
+      pseudocts:  additive smoothing parameter 
 
     Returns: square matrix containing Yule's Q
 
@@ -245,7 +251,7 @@ def yule_q(X: FeatMat, pseudocts: PsdCts = 0.5) -> SimsMat:
 
 
 def ochiai(X: FeatMat, pseudocts: PsdCts = 0.5) -> SimsMat:
-    r"""AKA cosine similarity on binary sets
+    r"""a.k.a cosine similarity on binary sets
 
     Effectively an uncentered correlation, but for binary observations the "cosine similarity" is also called the _Ochiai Coefficient_ between two sets $A,B$, where binary "1" stands for an element belonging to the set.
     See [Janson and Vegelius (1981)](https://doi.org/10.1007/bf00347601).
@@ -263,7 +269,7 @@ def ochiai(X: FeatMat, pseudocts: PsdCts = 0.5) -> SimsMat:
 
     Args:
       X: feature matrix
-      pseudocts:  
+      pseudocts:  additive smoothing parameter 
 
     Returns: square cosine similarity matrix (incl. ones in the diagonal)
 
@@ -281,7 +287,7 @@ def binary_cosine_similarity(X: FeatMat, pseudocts: PsdCts = 0.5) -> SimsMat:
 
     Args:
       X: feature matrix
-      pseudocts:
+      pseudocts:  additive smoothing parameter
 
     Returns: cosine similarity on binary feature vectors
 
@@ -302,8 +308,7 @@ def hyperbolic_project(
     as a probability.
 
     Args:
-      X:
-      pseudocts:
+      X: feature matrix
 
     """
     
@@ -332,8 +337,8 @@ def resource_project(
     can be overridden with any function of two same-shaped arrays.
 
     Args:
-      X:
-      pseudocts:
+      X: feature matrix
+      pseudocts: additive smoothing parameter
       sym_func:  function to symmetrize the resulting association measure
 
     Returns: symmetrized "resource projection" similarities
@@ -360,7 +365,7 @@ def high_salience_skeleton(X: FeatMat, prior_dists:SimsMat|None=None, pseudocts:
     Args:
       X: feature matrix
       prior_dists:  (Default = `-log(ochiai)`) prior distances for shortest paths
-      pseudocts: 
+      pseudocts: additive smoothing parameter 
 
     """
     if prior_dists is None:
@@ -397,7 +402,8 @@ def doubly_stochastic_filter(
     accomplish the "two stage" process used.
 
     Args:
-      X:
+      X:feature matrix
+      pseudocts:  additive smoothing parameter
       prior_sims:  (Default will calculate cosine similarity)
       sink_kws: kwargs to pass to `sinkhorn()`
     """
@@ -538,8 +544,8 @@ def forest_pursuit_edge(
 
     Args:
       X: feature matrix
-      prior_dists:  (Default value = None) default uses -log(cos-sim)
-      pseudocts:  (Default value = "min-connect")
+      prior_dists:  default uses `-log(cos)`
+      pseudocts:   additive smoothing parameter
 
     Returns: probability of edge traversal given a co-occurrence. 
     """
@@ -564,9 +570,9 @@ def forest_pursuit_interaction(
 
     Args:
       X: feature matrix
-      prior_dists: (Default value = None) default uses -log(cos-sim)
-      precalc_prob: (Default value = None) to avoid re-computing edge prob
-      pseudocts:  (Default value = "min-connect")
+      prior_dists: default uses `-log(cos)`
+      precalc_prob: to avoid re-computing edge prob if you already have
+      pseudocts:  additive smoothing parameter
 
     Returns: probability of observing an edge traversal
 
@@ -619,10 +625,10 @@ def forest_pursuit(
       See [forest_pursuit_interaction][affinis.associations.forest_pursuit_interaction].
 
     Args:
-      X: 
-      mode:
-      pseudocts:
-      prior_dists:
+      X: feature matrix
+      mode: inference mode
+      pseudocts: additive smoothing parameter
+      prior_dists: previously calculated inter-node distances (default:`-log(cos)`)
       **efm_kws: kwargs to pass to
           [expected_forest_maximization][affinis.associations.expected_forest_maximization]
           if that mode is selected. 

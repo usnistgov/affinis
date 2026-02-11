@@ -1,20 +1,21 @@
 [project]
 
-site_name = "Documentation"
+site_name = "Affinis"
 
 site_description = "A new project generated from the default template project."
 site_author = "Rachael Sexton"
 #site_url = "https://www.example.com/"
 
 copyright = """
-Affinis and all of it's associated documentation are in the public domain (see the <a href="https://github.com/usnistgov/Affinis/blob/main/LICENSE.md"> license </a>)
+Affinis and all of it's associated documentation are in the public domain (see the <a href="https://github.com/usnistgov/affinis/blob/main/LICENSE.md"> license </a>)
 """
 nav = [
   {"Home" = "index.md"},  
   {"Installation" = "install.md"},
   { "User Guide" = [
-      "user-guide/using.md",
-        # "using/assoc.md",
+      "user-guide/associations.md",
+      "user-guide/smoothing.md",
+      "user-guide/dist-prox.md",
         # "using/psdct.md"
     ]},
   {"Examples" = ["case-studies/example.md"]},
@@ -46,6 +47,8 @@ extra_javascript = [
   "https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js"  
 ]
 
+[project.markdown_extensions.footnotes]
+[project.markdown_extensions.admonition]
 [project.markdown_extensions.pymdownx.arithmatex]
 generic = true
 
