@@ -56,4 +56,17 @@ def sinkhorn(A:SimsMat, i:int=0, err:float=1e-6, it_max:int=1000):
     else:
         return sinkhorn((A / marg_sum).T, i=i + 1)
 
+def bilinear_kern(D:SimsMat)->SimsMat:
+    """
+    Inverse of the bilinear distance operation to recover a kernel. 
 
+    Args:
+      D: matrix of distances on nodes
+    """
+    J = np.ones_like(D)/D.shape[0]
+    H = np.eye(D.shape[0]) - J
+    
+    return -H@(D@H) + J
+    
+    
+    
