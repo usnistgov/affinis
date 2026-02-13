@@ -56,8 +56,9 @@ extra_javascript = [
 
 [project.markdown_extensions.footnotes]
 [project.markdown_extensions.admonition]
+
 [project.markdown_extensions.pymdownx.arithmatex]
-generic = true
+[project.markdown_extensions.pymdownx.details]
 [project.markdown_extensions.attr_list]
 
 [project.theme]
