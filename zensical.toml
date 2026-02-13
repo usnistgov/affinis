@@ -42,15 +42,23 @@ nav = [
 #   { "Markdown in 5min" = "markdown.md" },
 # ]
 #extra_css = ["stylesheets/extra.css"]
+
+extra_css = [
+  "https://pages.nist.gov/nist-header-footer/css/nist-combined.css",
+  "css/mkdocstrings.css"
+]
 extra_javascript = [
   "javascripts/mathjax.js",
-  "https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js"  
+  "https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js",
+  "https://pages.nist.gov/nist-header-footer/js/jquery-1.9.0.min.js",
+  "https://pages.nist.gov/nist-header-footer/js/nist-header-footer.js",
 ]
 
 [project.markdown_extensions.footnotes]
 [project.markdown_extensions.admonition]
 [project.markdown_extensions.pymdownx.arithmatex]
 generic = true
+[project.markdown_extensions.attr_list]
 
 [project.theme]
 

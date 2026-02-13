@@ -3,7 +3,14 @@
 <!-- #region -->
 > As in, (positive semidefinite) measures of similarity between points
 
-This section will go over of helper functions used by the `affinis.associations` module, but may be of interest in their own right. 
+This section covers functions that take _and_ return square matrices ([`SimsMat`][affinis.types.SimsMat]), so we will go over these helper functions located in various modules:
+
+- [`proximity`][affinis.proximity]
+- [`filter`][affinis.filter]
+- [`distance`][affinis.distance]
+
+
+These are primarily written as utilities for the tools in the [`associations`][affinis.associations] module, but may be of interest in their own right. 
 
 Much of the difficulty of "straightening out" what a given square matrix represents comes from lack of clarity over the differences between them, and how they relate to one-another. 
 
