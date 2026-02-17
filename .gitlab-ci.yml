@@ -25,7 +25,12 @@ pages:
   script:
     - pip install zensical
     - zensical build --clean
+  artifacts:
+    paths:
+      - site
   pages:
-    publish: public
+    # The folder that contains the files to be exposed at the Page URL
+    publish: site
   rules:
-    - if: "$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == $CI_DEFAULT_BRANCH
