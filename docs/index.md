@@ -1,4 +1,5 @@
-![affinis logo](affinis-logo.svg){align=right}
+![affinis logo](images/logo-light.svg#only-light){align=right}
+![affinis logo](images/logo-dark.svg#only-dark){align=right}
 
 # Affinis
 
