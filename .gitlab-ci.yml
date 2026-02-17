@@ -26,7 +26,7 @@ pages:
     - pip install poetry
     - poetry install
   script:
-    - zensical build --clean
+    - poetry run zensical build --clean
   artifacts:
     paths:
       - site
