@@ -24,6 +24,7 @@ pages:
   image: python:latest
   script:
     - pip install zensical
+    - pip install mkdocstrings-python
     - zensical build --clean
   artifacts:
     paths:
