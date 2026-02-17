@@ -106,9 +106,9 @@ scheme = "slate"
 toggle.icon = "lucide/moon"
 toggle.name = "Switch to light mode"
 
-#[project.theme.font]
-#text = "Inter"
-#code = "Jetbrains Mono"
+[project.theme.font]
+text = "Rubik"
+code = "Fira Code"
 
 #[project.theme.icon]
 #logo = "lucide/smile"

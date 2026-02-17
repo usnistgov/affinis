@@ -22,9 +22,10 @@ test:
 pages:
   stage: deploy
   image: python:latest
+  before_script:
+    - pip install poetry
+    - poetry install
   script:
-    - pip install zensical
-    - pip install mkdocstrings-python
     - zensical build --clean
   artifacts:
     paths:
