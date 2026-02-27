@@ -141,7 +141,7 @@ As examples, `affinis` provides implementations of the [High-Salience Skeleton][
 
 ```python
 hss = aff.high_salience_skeleton(X)
-dsf = aff.doubly_stochastic_filter(X)
+dsf = aff.doubly_stochastic_filter(X, reg=0.2)
 
 f,ax = plt.subplots(ncols=2, figsize=(6.5,2.5), sharey=True)
 sns.heatmap(hss,ax=ax[0], square=True)
@@ -206,7 +206,7 @@ Size reflects normalized weight, while color can be used for the sign (positive 
 from affinis.plots import hinton
 
 methods = {
-    'Chow Liu Tree': clt,
+    'Doubly Stochastic Filter': dsf,
     'Forest Pursuit': fps,  
     'HSS': hss,
     'Co-occurrence Prob.': coo,
@@ -227,7 +227,3 @@ plt.savefig(imgpath/'assoc-overview.webp')
 ```
 
 ![overview of methods](img/assoc-overview.webp)
-
-```python
-
-```

@@ -124,7 +124,7 @@ baselines = {
     'Co-occurrence Prob.': aff.coocur_prob(X, pseudocts=psct),
     'Hyperbolic Proj.': aff.hyperbolic_project(X),
     'odds-ratio': aff.odds_ratio(X, pseudocts=psct),
-    'doubly-stochastic':aff.doubly_stochastic_filter(X, pseudocts=psct),
+    'doubly-stochastic':aff.doubly_stochastic_filter(X, reg=0.1,pseudocts=psct),
     
 }
 f,axs = plt.subplots(nrows=2, ncols=3, figsize=(8,5))
@@ -158,10 +158,10 @@ from scipy.spatial.distance import squareform
 
 y_true = squareform(A).astype(bool)
 y_fp = squareform(baselines['Forest Pursuit'])
-y_hyp = squareform(baselines['Hyperbolic Proj.'],checks=False)
+y_ds = squareform(baselines['doubly-stochastic'],checks=False)
 
 m_fp = Contingent.from_scalar(y_true, y_fp)
-m_hyp = Contingent.from_scalar(y_true, y_hyp)
+m_ds = Contingent.from_scalar(y_true, y_ds)
 ```
 
 Let's look at how the _Matthew's Correlation Coefficient_ (MCC) changes for Forest Pursuit v.s. Hyperbolic Projection: 
@@ -173,15 +173,15 @@ ax.fill(
     alpha=0.8,label=f'FP: E[MCC]={m_fp.expected('mcc'):.3f}'
 )
 ax.fill(
-    m_hyp.weights, m_hyp.mcc, 
-    alpha=0.8,label=f'HYP: E[MCC]={m_hyp.expected('mcc'):.3f}'
+    m_ds.weights, m_ds.mcc, 
+    alpha=0.8,label=f'DS: E[MCC]={m_ds.expected('mcc'):.3f}'
 )
 ax.set(xlim=(0,1),ylim=(0,1),xlabel='threshold',ylabel='MCC Score')
 plt.legend()
 plt.savefig(imgpath/'collab-mcc.webp')
 ```
 
-![](img/collab-mcc.webp)
+![MCC score thresholds](img/collab-mcc.webp)
 
 
 Meanwhile, precision scores will drop off sharply for sparse, stable predictions like (default) Forest Pursuit, in order to let Recall sufficiently increase. 
@@ -201,7 +201,7 @@ plt.step(
 )
 plt.step(
     m_hyp.recall, m_hyp.precision, 
-    where='post', label=f'HYP: APS={m_hyp.expected('aps'):.3f}'
+    where='post', label=f'DS: APS={m_hyp.expected('aps'):.3f}'
 )
 plt.step(
     m_fpi.recall, m_fpi.precision, 

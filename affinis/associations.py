@@ -388,8 +388,9 @@ def high_salience_skeleton(X: FeatMat, prior_dists:SimsMat|None=None, pseudocts:
 
 def doubly_stochastic_filter(
     X:FeatMat,
+    reg:float=0.1,
     pseudocts:PsdCts=0.5,
-    prior_sims:SimsMat|None=None,
+    prior_dists:SimsMat|None=None,
     **sink_kws
 )->SimsMat:
     """From [P.B. Slater(2009)](https://doi.org/10.1073/pnas.0904725106),
@@ -408,9 +409,11 @@ def doubly_stochastic_filter(
       sink_kws: kwargs to pass to `sinkhorn()`
     """
 
-    if prior_sims is None:
-        prior_sims = ochiai(X, pseudocts=pseudocts)
-    ds = sinkhorn(prior_sims, **sink_kws)
+    if prior_dists is None:
+        prior_dists= -np.log(ochiai(X, pseudocts=pseudocts))
+
+    kern = _sq(np.exp(-_sq(prior_dists)/reg))
+    ds = sinkhorn(kern, **sink_kws)
 
     return _sq(min_connected_filter(_sq(ds)))
 
