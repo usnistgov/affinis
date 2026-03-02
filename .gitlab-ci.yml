@@ -2,28 +2,37 @@ stages:
   - build
   - deploy
 
-jupyter-build:
+test:
   stage: build
   image: python:3.11
   before_script:
     - pip install poetry
     - poetry install
-    - source `poetry env info --path`/bin/activate  
-    - poetry run python -m ipykernel install --user --name affinis
+    # - source `poetry env info --path`/bin/activate
+    # - poetry run python -m ipykernel install --user --name affinis
   script:
-    - jupyter-book clean manual
-    - jupyter-book build manual
-  artifacts:
-    paths:
-      - manual/_build/
+    - poetry run pytest tests/
+
+    # - jupyter-book clean manual
+    # - jupyter-book build manual
+  # artifacts:
+  #   paths:
+  #     - manual/_build/
 
 pages:
   stage: deploy
-  image: busybox:latest
+  image: python:3.11
+  before_script:
+    - pip install poetry
+    - poetry install
   script:
-    - mv manual/_build/html public
+    - poetry run zensical build --clean
   artifacts:
     paths:
-      - public
+      - site
+  pages:
+    # The folder that contains the files to be exposed at the Page URL
+    publish: site
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == $CI_DEFAULT_BRANCH

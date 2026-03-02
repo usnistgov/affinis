@@ -129,6 +129,16 @@ def groupby_col0(a):
     """[see source](https://stackoverflow.com/a/43094244)"""
     return np.split(a[:, 1], np.unique(a[:, 0], return_index=True)[1][1:])
 
+def csr_rows_idx(matrix):
+    """Return column indices for data in matrix, per row (empty array if none)"""
+    rows = matrix.shape[0]
+    for index in range(rows):
+        indptr_start = matrix.indptr[index]
+        indptr_end = matrix.indptr[index + 1]
+        # values = matrix.data[indptr_start:indptr_end]
+        indices = matrix.indices[indptr_start:indptr_end]
+        # func(indices, values)
+        yield indices
 
 def _upper_triangular_to_symmetric(ut):
     n = ut.shape[0]
