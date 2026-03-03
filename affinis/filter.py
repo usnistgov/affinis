@@ -81,3 +81,10 @@ def threshold_value(K:SimsMat, t:float, bin:bool=True)->SimsMat:
       t: cutoff-value
       bin: whether to binarize the output, or cut-off only. 
     """
+    edges = _sq(K)
+    edges_masked = threshold_edges_filter(edges, t)
+
+    if bin:
+        return _sq((~edges_masked.mask).astype(int))
+    else:
+        return _sq(edges_masked.filled(0))
