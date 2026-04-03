@@ -10,7 +10,7 @@ For more information on how to get started (whether it's tutorials, user guides,
 
 In large (sparse) feature matrices, especially ones with binary or integer-valued entries, you commonly need to figure out the underlying structure of your feature space from the observations. 
 
-> _E.g. given a bag-of-words matrix (a type of natural language vector embedding) figure out how the tokens/concepts (columns) in the corpus are related to each other, using only the set of documents (rows) that record token co-occurrences in them._
+> _E.g. given a document-term matrix (a type of vector embedding for natural language) figure out how the tokens/concepts (columns) in the corpus are related to each other, using only the set of documents (rows) that record token co-occurrences in them._
 
 Techniques for this are widely varied, and different communities have widely different practices and assumptions for what is an appropriate approach. 
 _Affinis_ provides a library of implementations---_with a consistent interface_---for approaching this problem. 
@@ -21,7 +21,7 @@ _Affinis_ provides a library of implementations---_with a consistent interface_-
 
 _Affinis_ should be considered a prototype for the purposes of research and community benchmark assistance.[^1]
 
-[^1]: approximate readiness level (TRL) 4-5
+[^1]: approximate [technology readiness level](https://en.wikipedia.org/wiki/Technology_readiness_level) (TRL) 4-5
 
 Primarily, this library's core features live in the `associations` module. 
 Here you will find functions collected from a wide variety of disciplines that accept a feature matrix $X$ with $n$ features (columns), and return $n\times n$ square matrices with association measures. 
