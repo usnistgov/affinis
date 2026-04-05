@@ -177,3 +177,5 @@ poetry.toml
 
 # End of https://www.toptal.com/developers/gitignore/api/python
 /.python-version
+content/_build
+data
