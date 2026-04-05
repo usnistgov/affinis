@@ -1,5 +1,4 @@
-Installing
-==========
+# Installing
 
 
 `affinis` is currently un-published. 

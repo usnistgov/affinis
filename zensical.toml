@@ -12,6 +12,7 @@ Affinis and all of it's associated documentation are in the public domain (see t
 nav = [
   {"Home" = "index.md"},  
   {"Installation" = "install.md"},
+  {"Contributing" = "contributing.md"},
   { "User Guide" = [
       "user-guide/associations.md",
       "user-guide/smoothing.md",
