@@ -2,13 +2,21 @@
 
 ## Usage & Attribution
 
-General thanks and mentioning issues/discussions
+We would love to hear about how you use `affinis`!
 
-### citing `affinis`
-code block of... bibtex? 
+### Citation
+
+If you use `affinis` in your work, please cite the following record:
+
+```bibtex
+placeholder
+    
+```
 
 ### Disclaimer
-Affinis and all of it's associated documentation are in the public domain
+
+You are free to use `affinis` in your tools and research!
+Affinis and all of it's associated documentation are in the public domain.
 
 ??? info "NIST Disclaimer"
 
@@ -47,10 +55,31 @@ Affinis and all of it's associated documentation are in the public domain
     United States.
 
 ## For Developers
-tools used (python-poetry, jupytext, zensical, pytest+hypothesis)
 
-### Project structure
-i.e. folder tree
+If you would like to contribute to `affinis`, please fork the repository and open a pull-request!
 
-### Pull Requests
-How-to, maybe
+We use a number of developer tools, but the primary prerequisite to get started is `poetry`, which we have used to manage virtual environments and track dependencies.
+
+Once you have [poetry installed](https://python-poetry.org/docs/#installation), clone this repository and run `poetry install` in the top level directory.
+This will install the necessary development dependencies, like jupytext, zensical, pytest, and hypothesis.
+
+The project structure is as follows:
+
+```
+.
+├── affinis            # Source for library
+├── docs               # Source for documentation
+│   ├── api
+│   ├── case-studies
+│   ├── css
+│   ├── images
+│   ├── javascripts
+│   └── user-guide
+├── notebooks          # Jupyter notebook source for tutorials
+│   ├── case-studies
+│   └── user-guide
+└── tests              # Unit tests (pytest+hypothesis)
+```
+
+To run unit tests during development, use the command `poetry run pytest tests/` to perform the property-based tests we have built for this library. 
+
