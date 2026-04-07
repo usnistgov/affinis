@@ -55,14 +55,26 @@ extra_javascript = [
   "https://pages.nist.gov/nist-header-footer/js/nist-header-footer.js",
 ]
 
-[project.markdown_extensions.footnotes]
-[project.markdown_extensions.admonition]
-
-[project.markdown_extensions.pymdownx.arithmatex]
-generic=true
-
-[project.markdown_extensions.pymdownx.details]
-[project.markdown_extensions.attr_list]
+# markdown_extensions = [
+#   "attr_list",
+#   "footnotes",
+#   "admonition",
+#   {pymdownx.arithmatex={generic=true}},
+#   "pymdownx.details",
+#   {pymdownx.tabbed={alternate_style=true}},
+#   {pymdownx.highlight={
+#     anchor_linenums = true,
+#     line_spans = "__span",
+#     pygments_lang_class = true,
+#   }},
+#   "pymdownx.inlinehilite",
+#   "pymdownx.snippets",
+#   {pymdownx.superfences={
+#   custom_fences = [
+#     { name = "mermaid", class = "mermaid", format = "pymdownx.superfences.fence_code_format" }
+#   ]
+#   }}
+# ]
 
 [project.theme]
 
@@ -123,6 +135,17 @@ icon = "fontawesome/brands/github"
 link = "https://github.com/usnistgov/affinis"
 
 
+### Markdown Ext. 
+[project.markdown_extensions.attr_list]
+[project.markdown_extensions.footnotes]
+[project.markdown_extensions.admonition]
+
+### pymdownx
+[project.markdown_extensions.pymdownx.arithmatex]
+generic=true
+[project.markdown_extensions.pymdownx.details]
+[project.markdown_extensions.pymdownx.tabbed]
+alternate_style=true
 [project.markdown_extensions.pymdownx.highlight]
 anchor_linenums = true
 line_spans = "__span"
@@ -134,10 +157,10 @@ custom_fences = [
   { name = "mermaid", class = "mermaid", format = "pymdownx.superfences.fence_code_format" }
 ]
 
+### mkdocstrings
 [project.plugins.mkdocstrings.handlers.python]
 inventories = ["https://docs.python.org/3/objects.inv"]
 paths = ["affinis/"]
-
 [project.plugins.mkdocstrings.handlers.python.options]
 docstring_style = "google"
 inherited_members = true

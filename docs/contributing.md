@@ -8,10 +8,21 @@ We would love to hear about how you use `affinis`!
 
 If you use `affinis` in your work, please cite the following record:
 
-```bibtex
-placeholder
-    
-```
+=== "Bibtex"
+    ```bibtex
+    @misc{dataset_key,
+      author       = {Sexton, Rachael T.},
+      title        = {Affinis},
+      subtitle     = {tools for inferring relations from co-occurrence data}
+      year         = {2026},
+      publisher    = {National Institute of Standards and Technology},
+      doi          = {10.18434/mds2-4107},
+      howpublished = {\url{https://doi.org/10.18434/mds2-4107}}
+    }
+    ```
+=== "Plain Text"
+    > Sexton, Rachael T (2026), Affinis: tools for inferring relations from co-occurrence data, National Institute of Standards and Technology, <https://doi.org/10.18434/mds2-4107>
+
 
 ### Disclaimer
 
@@ -56,14 +67,16 @@ Affinis and all of it's associated documentation are in the public domain.
 
 ## For Developers
 
-If you would like to contribute to `affinis`, please fork the repository and open a pull-request!
+If you would like to contribute to `affinis`, please fork the repository and open a pull-request.
 
+### Dependency & Environment Setup
 We use a number of developer tools, but the primary prerequisite to get started is `poetry`, which we have used to manage virtual environments and track dependencies.
 
 Once you have [poetry installed](https://python-poetry.org/docs/#installation), clone this repository and run `poetry install` in the top level directory.
 This will install the necessary development dependencies, like jupytext, zensical, pytest, and hypothesis.
 
-The project structure is as follows:
+### Project Structure
+
 
 ```
 .
@@ -81,5 +94,13 @@ The project structure is as follows:
 └── tests              # Unit tests (pytest+hypothesis)
 ```
 
-To run unit tests during development, use the command `poetry run pytest tests/` to perform the property-based tests we have built for this library. 
+### Unit Tests
+
+Tests should be added to the `tests/` directory n a per-module basis.
+For instance, for the `associations.py` module, `tests/test_associations.py`.
+
+To run unit tests during development, use this command to perform the property-based tests we have built for this library. 
+```
+poetry run pytest tests/
+```
 
