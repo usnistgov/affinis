@@ -3,7 +3,7 @@
 
 `Affinis` is a library of tools for assisting in unsupervised _structure learning_ on sparse, binary data. 
 
-For more information on how to get started (whether it's tutorials, user guides, or API documentation), see our [documentation](pages.nist.gov/affinis). 
+For more information on how to get started (whether it's tutorials, user guides, or API documentation), see our [documentation](https://pages.nist.gov/affinis). 
 
 ## What does it help with?
 
@@ -44,12 +44,19 @@ Here you will find functions collected from a wide variety of disciplines that a
 
 ## Installation 
 
-`affinis` is currently awaiting pre-publication review. 
-Reference installations can be achieved for development purposes with pip: 
+`affinis` can be installed from PyPI: 
 
-```shell
+```
+pip install affinis
+```
+
+If you would like access to the most recent/unstable version on GitHub (before a release): 
+
+```
 pip install git+https://github.com/usnistgov/affinis.git
 ```
+
+For access to the NIST PDR entry for `affinis`, see [`data.nist.gov`](https://data.nist.gov/pdr/lps/ark:/88434/mds2-4107).
 
 ## Other Information
 
