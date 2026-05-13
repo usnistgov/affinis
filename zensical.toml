@@ -4,7 +4,7 @@ site_name = "Affinis"
 
 site_description = "A new project generated from the default template project."
 site_author = "Rachael Sexton"
-#site_url = "https://www.example.com/"
+site_url = "https://pages.nist.gov/affinis/"
 
 copyright = """
 Affinis and all of it's associated documentation are in the public domain (see the <a href="https://github.com/usnistgov/affinis/blob/main/LICENSE.md"> license </a>)
@@ -20,13 +20,6 @@ nav = [
         # "using/psdct.md"
     ]},
   {"Examples" = ["case-studies/example.md"]},
-
-    # [
-        # "getting-started/01-installation.md",
-        # "getting-started/02-tutorial.md",
-        # "getting-started/03-performance.md"
-    # ]
-  # },
   { "API" = [
         'api/associations.md',
         'api/plots.md',
@@ -38,12 +31,6 @@ nav = [
         
   ]},
 ]
-# nav = [
-#   { "Get started" = "index.md" },
-#   { "Markdown in 5min" = "markdown.md" },
-# ]
-#extra_css = ["stylesheets/extra.css"]
-
 extra_css = [
   "https://pages.nist.gov/nist-header-footer/css/nist-combined.css",
   "css/mkdocstrings.css"
@@ -55,30 +42,9 @@ extra_javascript = [
   "https://pages.nist.gov/nist-header-footer/js/nist-header-footer.js",
 ]
 
-# markdown_extensions = [
-#   "attr_list",
-#   "footnotes",
-#   "admonition",
-#   {pymdownx.arithmatex={generic=true}},
-#   "pymdownx.details",
-#   {pymdownx.tabbed={alternate_style=true}},
-#   {pymdownx.highlight={
-#     anchor_linenums = true,
-#     line_spans = "__span",
-#     pygments_lang_class = true,
-#   }},
-#   "pymdownx.inlinehilite",
-#   "pymdownx.snippets",
-#   {pymdownx.superfences={
-#   custom_fences = [
-#     { name = "mermaid", class = "mermaid", format = "pymdownx.superfences.fence_code_format" }
-#   ]
-#   }}
-# ]
 
 [project.theme]
 
-#custom_dir = "overrides"
 favicon = "images/favicon.png"
 language = "en"
 
@@ -125,15 +91,10 @@ toggle.name = "Switch to light mode"
 text = "Rubik"
 code = "Fira Code"
 
-#[project.theme.icon]
-#logo = "lucide/smile"
-#repo = "lucide/smile"
-
 [[project.extra.social]]
 name = "USNISTGOV on GitHub"
 icon = "fontawesome/brands/github"
 link = "https://github.com/usnistgov/affinis"
-
 
 ### Markdown Ext. 
 [project.markdown_extensions.attr_list]
