@@ -2,7 +2,7 @@
 
 site_name = "Affinis"
 
-site_description = "A new project generated from the default template project."
+site_description = "Tools for inferring relations from binary co-occurrence data"
 site_author = "Rachael Sexton"
 site_url = "https://pages.nist.gov/affinis/"
 
