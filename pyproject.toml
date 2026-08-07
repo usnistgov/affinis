@@ -33,6 +33,7 @@ pandas = ">=1.5.3"
 networkx = ">=3"
 zensical = "^0.0.21"
 mkdocstrings = {extras = ["python"], version = "^1.0.2"}
+memory-profiler = "^0.61.0"
 
 
 [tool.pytest.ini_options]

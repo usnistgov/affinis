@@ -4,8 +4,10 @@ from typing import Callable, TypeAlias
 import numpy as np
 # from bidict import frozenbidict
 from scipy.linalg import lapack
-from scipy.sparse import coo_array, dok_array
-from jaxtyping import Int
+from scipy.sparse import coo_array
+from jaxtyping import Int, Real
+from plum import dispatch
+from sparse import COO, diagonal, triu, stack
 
 Idx: TypeAlias = Int[np.ndarray, "*elems"]
 
@@ -18,6 +20,32 @@ def _outer(f: Callable[[np.ndarray, np.ndarray], np.ndarray], a: np.ndarray):
     return f.outer(a, a)
 
 
+@dispatch
+def _sq(A:Real[COO, "n n"])->Real[COO, "e"]:
+    n = min(A.shape[-1],A.shape[-2])
+    a=triu(A, k=1)  # wow this works with ndim>2 as well! 
+    coords = sq_ij_e(n, a.coords[-2:,:])  # which means I can too!
+    shape = int(n*n/2-n/2)
+
+    if a.ndim>2:  # maybe there's a slicing/indexing way to make implicit
+        coords =  np.vstack([a.coords[0], coords])
+        shape = (a.shape[0],shape)
+    return COO(shape=shape, coords=coords, data=a.data)
+
+@dispatch
+def _sq(A:Real[COO, "e"])-> Real[COO, "n n"]:
+    ## NOT CURRENTLY BATCH-DIM COMPATIBLE
+    n = int(np.ceil(np.sqrt(e.shape[0] * 2)))
+    # Check that e is of valid dimensions.
+    if n * (n - 1) != e.shape[0] * 2:  # identical check from scipy
+        raise ValueError(
+            'Incompatible vector size. It must be a triangular number.'
+        )
+    tri_coords=sq_e_ij(n, e.coords[0])
+    tri=COO(coords=tri_coords, shape=(n,n), data=e.data)
+    return tri+tri.T
+
+@dispatch
 def _sq(A):
     """we want the off-diagonals, flat<->sq
 
