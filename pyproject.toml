@@ -1,17 +1,14 @@
 [project]
 name = "affinis"
-version = "0.7.5"
+version = "0.7.6"
 description = "Tools for inferring relations from binary co-occurrence data"
-requires-python = ">=3.12"
+requires-python = ">=3.11"
 authors = [{name = "Rachael Sexton", email = "rtbs@nist.gov"}]
 maintainers = [
   { name = "Rachael Sexton", email = "gh@rtbs.dev"}
 ]
 
-[project.urls]
-source = "https://github.com/usnistgov/affinis"
-documentation = "https://pages.nist.gov/affinis"
-homepage = "https://data.nist.gov/od/id/mds2-4107"
+
 
 keywords = [
   "network analysis",
@@ -35,6 +32,11 @@ dependencies = [
   "plum-dispatch~=2.6",
   "contingency-tools~=0.2",
 ]
+
+[project.urls]
+source = "https://github.com/usnistgov/affinis"
+documentation = "https://pages.nist.gov/affinis"
+homepage = "https://data.nist.gov/od/id/mds2-4107"
 
 [dependency-groups]
 dev = [
