@@ -15,17 +15,18 @@
         <link rel="canonical" href="https://pages.nist.gov/affinis/api/proximity/">
       
       
+      
         <link rel="prev" href="../priors/">
       
       
-        <link rel="next" href="../distance/">
+        <link rel="next" href="../types/">
       
       
         
       
       
       <link rel="icon" href="../../images/favicon.png">
-      <meta name="generator" content="zensical-0.0.21">
+      <meta name="generator" content="zensical-0.0.73">
     
     
       
@@ -36,12 +37,12 @@
       
         
       
-      <link rel="stylesheet" href="../../assets/stylesheets/modern/main.f28b7ce3.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/modern/main.4ab2de0c.min.css">
       
         
           
         
-        <link rel="stylesheet" href="../../assets/stylesheets/modern/palette.dfe2e883.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/modern/palette.b60ce83d.min.css">
       
       
 
@@ -55,7 +56,7 @@
         
         
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Rubik:300,300i,400,400i,500,500i,700,700i%7CFira+Code:400,400i,700,700i&display=fallback">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Rubik:300,300i,400,400i,500,500i,700,700i%7CFira+Code:400,400i,700,700i&amp;display=fallback">
         <style>:root{--md-text-font:"Rubik";--md-code-font:"Fira Code"}</style>
       
     
@@ -64,7 +65,7 @@
     
       <link rel="stylesheet" href="../../css/mkdocstrings.css">
     
-    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,t)=>(e<<5)-e+t.charCodeAt(0)),0),__md_get=(e,t=localStorage,a=__md_scope)=>JSON.parse(t.getItem(a.pathname+"."+e)),__md_set=(e,t,a=localStorage,_=__md_scope)=>{try{a.setItem(_.pathname+"."+e,JSON.stringify(t))}catch(e){}},document.documentElement.setAttribute("data-platform",navigator.platform)</script>
+    <script>__md_scope=new URL("../..",location),__md_scope.pathname.endsWith("/")||(__md_scope=new URL(__md_scope.pathname+"/",location)),__md_hash=e=>[...e].reduce(((e,t)=>(e<<5)-e+t.charCodeAt(0)),0),__md_get=(e,t=localStorage,_=__md_scope)=>JSON.parse(t.getItem(_.pathname+"."+e)),__md_set=(e,t,_=localStorage,a=__md_scope)=>{try{_.setItem(a.pathname+"."+e,JSON.stringify(t))}catch(e){}},document.documentElement.setAttribute("data-platform",navigator.platform)</script>
     
       
 
@@ -85,14 +86,11 @@
     
     <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
     <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
-    <label class="md-overlay" for="__drawer"></label>
+    <label class="md-overlay" for="__drawer" aria-hidden="true"></label>
     <div data-md-component="skip">
-      
-        
-        <a href="#affinis.proximity" class="md-skip">
-          Skip to content
-        </a>
-      
+      <a href="#__skip" class="md-skip">
+        Skip to content
+      </a>
     </div>
     <div data-md-component="announce">
       
@@ -108,12 +106,13 @@
     <a href="../.." title="Affinis" class="md-header__button md-logo" aria-label="Affinis" data-md-component="logo">
       
   
-  <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-book-open" viewBox="0 0 24 24"><path d="M12 7v14M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></svg>
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-book-open" viewBox="0 0 24 24"><path d="M12 5v16M20.001 19A2 2 0 0 0 22 17V5a2 2 0 0 0-1.999-2L16 3.002A5 5 0 0 0 12 5a5 5 0 0 0-4-2H4a2 2 0 0 0-2 2v12a2 2 0 0 0 1.999 2H8a5 5 0 0 1 4 2 5 5 0 0 1 4-2z"/></svg>
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
       
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-menu" viewBox="0 0 24 24"><path d="M4 5h16M4 12h16M4 19h16"/></svg>
+      <span class="md-visually-hidden">Navigation</span>
     </label>
     <div class="md-header__title" data-md-component="header-title">
       <div class="md-header__ellipsis">
@@ -168,6 +167,7 @@
         <label class="md-header__button md-icon" for="__search">
           
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-search" viewBox="0 0 24 24"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>
+          <span class="md-visually-hidden">Search</span>
         </label>
         <div class="md-search" data-md-component="search" role="dialog" aria-label="Search">
   <button type="button" class="md-search__button">
@@ -207,7 +207,7 @@
     <a href="../.." title="Affinis" class="md-nav__button md-logo" aria-label="Affinis" data-md-component="logo">
       
   
-  <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-book-open" viewBox="0 0 24 24"><path d="M12 7v14M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></svg>
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-book-open" viewBox="0 0 24 24"><path d="M12 5v16M20.001 19A2 2 0 0 0 22 17V5a2 2 0 0 0-1.999-2L16 3.002A5 5 0 0 0 12 5a5 5 0 0 0-4-2H4a2 2 0 0 0-2 2v12a2 2 0 0 0 1.999 2H8a5 5 0 0 1 4 2 5 5 0 0 1 4-2z"/></svg>
 
     </a>
     Affinis
@@ -229,8 +229,7 @@
   <span class="md-ellipsis">
     
   
-    Home
-  
+  Home
 
     
   </span>
@@ -256,8 +255,7 @@
   <span class="md-ellipsis">
     
   
-    Installation
-  
+  Installation
 
     
   </span>
@@ -283,8 +281,7 @@
   <span class="md-ellipsis">
     
   
-    Contributing
-  
+  Contributing
 
     
   </span>
@@ -334,8 +331,7 @@
   <span class="md-ellipsis">
     
   
-    User Guide
-  
+  User Guide
 
     
   </span>
@@ -345,19 +341,19 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4">
-            <span class="md-nav__icon md-icon"></span>
-            
+        
+          <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+            <label class="md-nav__title" for="__nav_4">
+              <span class="md-nav__icon md-icon"></span>
+              
   
-    User Guide
-  
+  User Guide
 
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
+            </label>
+            <ul class="md-nav__list" data-md-scrollfix>
               
                 
+                  
   
   
   
@@ -370,8 +366,7 @@
   <span class="md-ellipsis">
     
   
-    Binary Association
-  
+  Binary Association
 
     
   </span>
@@ -382,10 +377,10 @@
     </li>
   
 
-              
-            
+                
               
                 
+                  
   
   
   
@@ -398,8 +393,7 @@
   <span class="md-ellipsis">
     
   
-    Smoothing
-  
+  Smoothing
 
     
   </span>
@@ -410,10 +404,10 @@
     </li>
   
 
-              
-            
+                
               
                 
+                  
   
   
   
@@ -426,8 +420,7 @@
   <span class="md-ellipsis">
     
   
-    Kernels
-  
+  Kernels
 
     
   </span>
@@ -438,10 +431,11 @@
     </li>
   
 
+                
               
-            
-          </ul>
-        </nav>
+            </ul>
+          </nav>
+        
       
     </li>
   
@@ -481,8 +475,7 @@
   <span class="md-ellipsis">
     
   
-    Examples
-  
+  Examples
 
     
   </span>
@@ -492,19 +485,19 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_5">
-            <span class="md-nav__icon md-icon"></span>
-            
+        
+          <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+            <label class="md-nav__title" for="__nav_5">
+              <span class="md-nav__icon md-icon"></span>
+              
   
-    Examples
-  
+  Examples
 
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
+            </label>
+            <ul class="md-nav__list" data-md-scrollfix>
               
                 
+                  
   
   
   
@@ -517,8 +510,7 @@
   <span class="md-ellipsis">
     
   
-    Collaboration Networks
-  
+  Collaboration Networks
 
     
   </span>
@@ -529,10 +521,11 @@
     </li>
   
 
+                
               
-            
-          </ul>
-        </nav>
+            </ul>
+          </nav>
+        
       
     </li>
   
@@ -548,6 +541,8 @@
   
     
     
+      
+        
       
         
       
@@ -586,8 +581,7 @@
   <span class="md-ellipsis">
     
   
-    API
-  
+  API
 
     
   </span>
@@ -597,19 +591,19 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
-          <label class="md-nav__title" for="__nav_6">
-            <span class="md-nav__icon md-icon"></span>
-            
+        
+          <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+            <label class="md-nav__title" for="__nav_6">
+              <span class="md-nav__icon md-icon"></span>
+              
   
-    API
-  
+  API
 
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
+            </label>
+            <ul class="md-nav__list" data-md-scrollfix>
               
                 
+                  
   
   
   
@@ -622,8 +616,7 @@
   <span class="md-ellipsis">
     
   
-    <code class="doc-symbol doc-symbol-toc doc-symbol-module"></code>&nbsp;associations
-  
+  <code class="doc-symbol doc-symbol-toc doc-symbol-module"></code>&nbsp;associations
 
     
   </span>
@@ -634,10 +627,91 @@
     </li>
   
 
-              
-            
+                
               
                 
+                  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../distance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  <code class="doc-symbol doc-symbol-toc doc-symbol-module"></code>&nbsp;distance
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+                
+                  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../edgespace/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  <code class="doc-symbol doc-symbol-toc doc-symbol-module"></code>&nbsp;edgespace
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+                
+                  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../filters/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  <code class="doc-symbol doc-symbol-toc doc-symbol-module"></code>&nbsp;filter
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+                
+                  
   
   
   
@@ -650,8 +724,7 @@
   <span class="md-ellipsis">
     
   
-    <code class="doc-symbol doc-symbol-toc doc-symbol-module"></code>&nbsp;plots
-  
+  <code class="doc-symbol doc-symbol-toc doc-symbol-module"></code>&nbsp;plots
 
     
   </span>
@@ -662,10 +735,10 @@
     </li>
   
 
-              
-            
+                
               
                 
+                  
   
   
   
@@ -678,8 +751,7 @@
   <span class="md-ellipsis">
     
   
-    <code class="doc-symbol doc-symbol-toc doc-symbol-module"></code>&nbsp;priors
-  
+  <code class="doc-symbol doc-symbol-toc doc-symbol-module"></code>&nbsp;priors
 
     
   </span>
@@ -690,10 +762,10 @@
     </li>
   
 
-              
-            
+                
               
                 
+                  
   
   
     
@@ -702,7 +774,7 @@
   
     <li class="md-nav__item md-nav__item--active">
       
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
       
       
         
@@ -715,8 +787,7 @@
   <span class="md-ellipsis">
     
   
-    <code class="doc-symbol doc-symbol-toc doc-symbol-module"></code>&nbsp;proximity
-  
+  <code class="doc-symbol doc-symbol-toc doc-symbol-module"></code>&nbsp;proximity
 
     
   </span>
@@ -726,15 +797,14 @@
           <span class="md-nav__icon md-icon"></span>
         </label>
       
-      <a href="./" class="md-nav__link md-nav__link--active">
+      <a href="././" class="md-nav__link md-nav__link--active">
         
   
   
   <span class="md-ellipsis">
     
   
-    <code class="doc-symbol doc-symbol-toc doc-symbol-module"></code>&nbsp;proximity
-  
+  <code class="doc-symbol doc-symbol-toc doc-symbol-module"></code>&nbsp;proximity
 
     
   </span>
@@ -762,9 +832,9 @@
         <li class="md-nav__item">
   <a href="#affinis.proximity.bilinear_kern" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;bilinear_kern
-      
+      </span>
     </span>
   </a>
   
@@ -774,9 +844,9 @@
           <li class="md-nav__item">
   <a href="#affinis.proximity.bilinear_kern(D)" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         <code class="doc-symbol doc-symbol-toc doc-symbol-parameter"></code>&nbsp;D
-      
+      </span>
     </span>
   </a>
   
@@ -790,9 +860,9 @@
         <li class="md-nav__item">
   <a href="#affinis.proximity.forest" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;forest
-      
+      </span>
     </span>
   </a>
   
@@ -801,9 +871,9 @@
         <li class="md-nav__item">
   <a href="#affinis.proximity.forest_correlation" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;forest_correlation
-      
+      </span>
     </span>
   </a>
   
@@ -812,9 +882,9 @@
         <li class="md-nav__item">
   <a href="#affinis.proximity.sinkhorn" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;sinkhorn
-      
+      </span>
     </span>
   </a>
   
@@ -827,66 +897,10 @@
     </li>
   
 
-              
-            
+                
               
                 
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../distance/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    <code class="doc-symbol doc-symbol-toc doc-symbol-module"></code>&nbsp;distance
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../filters/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    <code class="doc-symbol doc-symbol-toc doc-symbol-module"></code>&nbsp;filter
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
+                  
   
   
   
@@ -899,8 +913,7 @@
   <span class="md-ellipsis">
     
   
-    <code class="doc-symbol doc-symbol-toc doc-symbol-module"></code>&nbsp;types
-  
+  <code class="doc-symbol doc-symbol-toc doc-symbol-module"></code>&nbsp;types
 
     
   </span>
@@ -911,10 +924,11 @@
     </li>
   
 
+                
               
-            
-          </ul>
-        </nav>
+            </ul>
+          </nav>
+        
       
     </li>
   
@@ -930,6 +944,19 @@
               
               <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
                 <div class="md-sidebar__scrollwrap">
+                  
+                    
+                    
+                    
+                      
+                    
+                    
+                      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+                      <div class="md-sidebar-button__wrapper">
+                        <label class="md-sidebar-button" for="__toc"></label>
+                      </div>
+                    
+                  
                   <div class="md-sidebar__inner">
                     
 
@@ -950,9 +977,9 @@
         <li class="md-nav__item">
   <a href="#affinis.proximity.bilinear_kern" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;bilinear_kern
-      
+      </span>
     </span>
   </a>
   
@@ -962,9 +989,9 @@
           <li class="md-nav__item">
   <a href="#affinis.proximity.bilinear_kern(D)" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         <code class="doc-symbol doc-symbol-toc doc-symbol-parameter"></code>&nbsp;D
-      
+      </span>
     </span>
   </a>
   
@@ -978,9 +1005,9 @@
         <li class="md-nav__item">
   <a href="#affinis.proximity.forest" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;forest
-      
+      </span>
     </span>
   </a>
   
@@ -989,9 +1016,9 @@
         <li class="md-nav__item">
   <a href="#affinis.proximity.forest_correlation" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;forest_correlation
-      
+      </span>
     </span>
   </a>
   
@@ -1000,9 +1027,9 @@
         <li class="md-nav__item">
   <a href="#affinis.proximity.sinkhorn" class="md-nav__link">
     <span class="md-ellipsis">
-      
+      <span class="md-typeset">
         <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;sinkhorn
-      
+      </span>
     </span>
   </a>
   
@@ -1035,6 +1062,7 @@
     <li class="md-path__item">
       <a href="../.." class="md-path__link">
         
+  
   <span class="md-ellipsis">
     Home
   </span>
@@ -1050,9 +1078,31 @@
   
     
     
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+    
       <li class="md-path__item">
         <a href="../associations/" class="md-path__link">
           
+  
   <span class="md-ellipsis">
     API
   </span>
@@ -1068,8 +1118,10 @@
 
               
               <article class="md-content__inner md-typeset">
+                <a id="__skip" tabindex="-1"></a>
                 
                   
+
 
 <p>Functions in this module operate on existing <em>square</em> matrices, and transform them to acheive normalization, kernels, etc.
 Specifically, we plan to provide a set of functions revolving around kernels and proximities defined on the vertices of graphs. 
@@ -1103,31 +1155,31 @@ For now, the provided functions are limited to several that are used in the rest
 <p><span class="doc-section-title">Functions:</span></p>
     <ul>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-function&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-function-name&quot;&gt;bilinear_kern&lt;/span&gt;" href="./#affinis.proximity.bilinear_kern">bilinear_kern</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-function&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-function-name&quot;&gt;bilinear_kern&lt;/span&gt; (&lt;code&gt;affinis.proximity.bilinear_kern&lt;/code&gt;)" href="./#affinis.proximity.bilinear_kern">bilinear_kern</a></code></b>
             –
             <div class="doc-md-description">
-              <p>Inverse of the bilinear distance operation to recover a kernel. </p>
+              <p>Inverse of the bilinear distance operation to recover a kernel.</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-function&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-function-name&quot;&gt;forest&lt;/span&gt;" href="./#affinis.proximity.forest">forest</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-function&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-function-name&quot;&gt;forest&lt;/span&gt; (&lt;code&gt;affinis.proximity.forest&lt;/code&gt;)" href="./#affinis.proximity.forest">forest</a></code></b>
             –
             <div class="doc-md-description">
               <p>relative forest accessibilities</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-function&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-function-name&quot;&gt;forest_correlation&lt;/span&gt;" href="./#affinis.proximity.forest_correlation">forest_correlation</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-function&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-function-name&quot;&gt;forest_correlation&lt;/span&gt; (&lt;code&gt;affinis.proximity.forest_correlation&lt;/code&gt;)" href="./#affinis.proximity.forest_correlation">forest_correlation</a></code></b>
             –
             <div class="doc-md-description">
               <p>Re-scaling of forest matrix to have unit diagonal entries.</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-function&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-function-name&quot;&gt;sinkhorn&lt;/span&gt;" href="./#affinis.proximity.sinkhorn">sinkhorn</a></code></b>
+            <b><code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-function&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-function-name&quot;&gt;sinkhorn&lt;/span&gt; (&lt;code&gt;affinis.proximity.sinkhorn&lt;/code&gt;)" href="./#affinis.proximity.sinkhorn">sinkhorn</a></code></b>
             –
             <div class="doc-md-description">
-              <p>Make matrix A doubly-stochastic (rows/cols sum to 1), if possible. </p>
+              <p>Make matrix A doubly-stochastic (rows/cols sum to 1), if possible.</p>
             </div>
           </li>
     </ul>
@@ -1155,22 +1207,22 @@ For now, the provided functions are limited to several that are used in the rest
 
 
 </h2>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">bilinear_kern</span><span class="p">(</span><span class="n"><a class="autorefs autorefs-internal" title="&lt;b&gt;&lt;code&gt;D&lt;/code&gt;&lt;/b&gt;" href="./#affinis.proximity.bilinear_kern(D)">D</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-attribute&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-attribute-name&quot;&gt;SimsMat&lt;/span&gt;
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">bilinear_kern</span><span class="p">(</span><span class="n"><a class="autorefs autorefs-internal" title="&lt;b&gt;&lt;code&gt;D&lt;/code&gt;&lt;/b&gt; (&lt;code&gt;affinis.proximity.bilinear_kern(D)&lt;/code&gt;)" href="./#affinis.proximity.bilinear_kern(D)">D</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-attribute&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-attribute-name&quot;&gt;SimsMat&lt;/span&gt;
 
 
   &lt;span class=&quot;doc doc-labels&quot;&gt;
       &lt;small class=&quot;doc doc-label doc-label-module-attribute&quot;&gt;&lt;code&gt;module-attribute&lt;/code&gt;&lt;/small&gt;
-  &lt;/span&gt;" href="../types/#affinis.types.SimsMat">SimsMat</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-attribute&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-attribute-name&quot;&gt;SimsMat&lt;/span&gt;
+  &lt;/span&gt; (&lt;code&gt;affinis.types.SimsMat&lt;/code&gt;)" href="../types/#affinis.types.SimsMat">SimsMat</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-attribute&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-attribute-name&quot;&gt;SimsMat&lt;/span&gt;
 
 
   &lt;span class=&quot;doc doc-labels&quot;&gt;
       &lt;small class=&quot;doc doc-label doc-label-module-attribute&quot;&gt;&lt;code&gt;module-attribute&lt;/code&gt;&lt;/small&gt;
-  &lt;/span&gt;" href="../types/#affinis.types.SimsMat">SimsMat</a></span>
+  &lt;/span&gt; (&lt;code&gt;affinis.types.SimsMat&lt;/code&gt;)" href="../types/#affinis.types.SimsMat">SimsMat</a></span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
 
-        <p>Inverse of the bilinear distance operation to recover a kernel. </p>
+        <p>Inverse of the bilinear distance operation to recover a kernel.</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -1182,7 +1234,7 @@ For now, the provided functions are limited to several that are used in the rest
 
   &lt;span class=&quot;doc doc-labels&quot;&gt;
       &lt;small class=&quot;doc doc-label doc-label-module-attribute&quot;&gt;&lt;code&gt;module-attribute&lt;/code&gt;&lt;/small&gt;
-  &lt;/span&gt;" href="../types/#affinis.types.SimsMat">SimsMat</a></code>)
+  &lt;/span&gt; (&lt;code&gt;affinis.types.SimsMat&lt;/code&gt;)" href="../types/#affinis.types.SimsMat">SimsMat</a></code>)
           –
           <div class="doc-md-description">
             <p>matrix of distances on nodes</p>
@@ -1192,28 +1244,28 @@ For now, the provided functions are limited to several that are used in the rest
 
 
             <details class="mkdocstrings-source">
-              <summary>Source code in <code>affinis/proximity.py</code></summary>
-              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-59">59</a></span>
-<span class="normal"><a href="#__codelineno-0-60">60</a></span>
-<span class="normal"><a href="#__codelineno-0-61">61</a></span>
-<span class="normal"><a href="#__codelineno-0-62">62</a></span>
-<span class="normal"><a href="#__codelineno-0-63">63</a></span>
-<span class="normal"><a href="#__codelineno-0-64">64</a></span>
-<span class="normal"><a href="#__codelineno-0-65">65</a></span>
-<span class="normal"><a href="#__codelineno-0-66">66</a></span>
-<span class="normal"><a href="#__codelineno-0-67">67</a></span>
-<span class="normal"><a href="#__codelineno-0-68">68</a></span>
-<span class="normal"><a href="#__codelineno-0-69">69</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-59"><a id="__codelineno-0-59" name="__codelineno-0-59"></a><span class="k">def</span><span class="w"> </span><span class="nf">bilinear_kern</span><span class="p">(</span><span class="n">D</span><span class="p">:</span><span class="n">SimsMat</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">SimsMat</span><span class="p">:</span>
-</span><span id="__span-0-60"><a id="__codelineno-0-60" name="__codelineno-0-60"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="__span-0-61"><a id="__codelineno-0-61" name="__codelineno-0-61"></a><span class="sd">    Inverse of the bilinear distance operation to recover a kernel. </span>
-</span><span id="__span-0-62"><a id="__codelineno-0-62" name="__codelineno-0-62"></a>
-</span><span id="__span-0-63"><a id="__codelineno-0-63" name="__codelineno-0-63"></a><span class="sd">    Args:</span>
-</span><span id="__span-0-64"><a id="__codelineno-0-64" name="__codelineno-0-64"></a><span class="sd">      D: matrix of distances on nodes</span>
-</span><span id="__span-0-65"><a id="__codelineno-0-65" name="__codelineno-0-65"></a><span class="sd">    &quot;&quot;&quot;</span>
-</span><span id="__span-0-66"><a id="__codelineno-0-66" name="__codelineno-0-66"></a>    <span class="n">J</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">D</span><span class="p">)</span><span class="o">/</span><span class="n">D</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-</span><span id="__span-0-67"><a id="__codelineno-0-67" name="__codelineno-0-67"></a>    <span class="n">H</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">D</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">-</span> <span class="n">J</span>
-</span><span id="__span-0-68"><a id="__codelineno-0-68" name="__codelineno-0-68"></a>
-</span><span id="__span-0-69"><a id="__codelineno-0-69" name="__codelineno-0-69"></a>    <span class="k">return</span> <span class="o">-</span><span class="n">H</span><span class="o">@</span><span class="p">(</span><span class="n">D</span><span class="nd">@H</span><span class="p">)</span> <span class="o">+</span> <span class="n">J</span>
+              <summary>Source code in <code>src/affinis/proximity.py</code></summary>
+              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#affinis.proximity.bilinear_kern--source--__codelineno-0-65">65</a></span>
+<span class="normal"><a href="#affinis.proximity.bilinear_kern--source--__codelineno-0-66">66</a></span>
+<span class="normal"><a href="#affinis.proximity.bilinear_kern--source--__codelineno-0-67">67</a></span>
+<span class="normal"><a href="#affinis.proximity.bilinear_kern--source--__codelineno-0-68">68</a></span>
+<span class="normal"><a href="#affinis.proximity.bilinear_kern--source--__codelineno-0-69">69</a></span>
+<span class="normal"><a href="#affinis.proximity.bilinear_kern--source--__codelineno-0-70">70</a></span>
+<span class="normal"><a href="#affinis.proximity.bilinear_kern--source--__codelineno-0-71">71</a></span>
+<span class="normal"><a href="#affinis.proximity.bilinear_kern--source--__codelineno-0-72">72</a></span>
+<span class="normal"><a href="#affinis.proximity.bilinear_kern--source--__codelineno-0-73">73</a></span>
+<span class="normal"><a href="#affinis.proximity.bilinear_kern--source--__codelineno-0-74">74</a></span>
+<span class="normal"><a href="#affinis.proximity.bilinear_kern--source--__codelineno-0-75">75</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="affinis.proximity.bilinear_kern--source--__span-0-65"><a id="affinis.proximity.bilinear_kern--source--__codelineno-0-65" name="affinis.proximity.bilinear_kern--source--__codelineno-0-65"></a><span class="k">def</span><span class="w"> </span><span class="nf">bilinear_kern</span><span class="p">(</span><span class="n">D</span><span class="p">:</span> <span class="n">SimsMat</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SimsMat</span><span class="p">:</span>
+</span><span id="affinis.proximity.bilinear_kern--source--__span-0-66"><a id="affinis.proximity.bilinear_kern--source--__codelineno-0-66" name="affinis.proximity.bilinear_kern--source--__codelineno-0-66"></a><span class="w">    </span><span class="sd">"""</span>
+</span><span id="affinis.proximity.bilinear_kern--source--__span-0-67"><a id="affinis.proximity.bilinear_kern--source--__codelineno-0-67" name="affinis.proximity.bilinear_kern--source--__codelineno-0-67"></a><span class="sd">    Inverse of the bilinear distance operation to recover a kernel.</span>
+</span><span id="affinis.proximity.bilinear_kern--source--__span-0-68"><a id="affinis.proximity.bilinear_kern--source--__codelineno-0-68" name="affinis.proximity.bilinear_kern--source--__codelineno-0-68"></a>
+</span><span id="affinis.proximity.bilinear_kern--source--__span-0-69"><a id="affinis.proximity.bilinear_kern--source--__codelineno-0-69" name="affinis.proximity.bilinear_kern--source--__codelineno-0-69"></a><span class="sd">    Args:</span>
+</span><span id="affinis.proximity.bilinear_kern--source--__span-0-70"><a id="affinis.proximity.bilinear_kern--source--__codelineno-0-70" name="affinis.proximity.bilinear_kern--source--__codelineno-0-70"></a><span class="sd">      D: matrix of distances on nodes</span>
+</span><span id="affinis.proximity.bilinear_kern--source--__span-0-71"><a id="affinis.proximity.bilinear_kern--source--__codelineno-0-71" name="affinis.proximity.bilinear_kern--source--__codelineno-0-71"></a><span class="sd">    """</span>
+</span><span id="affinis.proximity.bilinear_kern--source--__span-0-72"><a id="affinis.proximity.bilinear_kern--source--__codelineno-0-72" name="affinis.proximity.bilinear_kern--source--__codelineno-0-72"></a>    <span class="n">J</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">D</span><span class="p">)</span> <span class="o">/</span> <span class="n">D</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+</span><span id="affinis.proximity.bilinear_kern--source--__span-0-73"><a id="affinis.proximity.bilinear_kern--source--__codelineno-0-73" name="affinis.proximity.bilinear_kern--source--__codelineno-0-73"></a>    <span class="n">H</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">D</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">-</span> <span class="n">J</span>
+</span><span id="affinis.proximity.bilinear_kern--source--__span-0-74"><a id="affinis.proximity.bilinear_kern--source--__codelineno-0-74" name="affinis.proximity.bilinear_kern--source--__codelineno-0-74"></a>
+</span><span id="affinis.proximity.bilinear_kern--source--__span-0-75"><a id="affinis.proximity.bilinear_kern--source--__codelineno-0-75" name="affinis.proximity.bilinear_kern--source--__codelineno-0-75"></a>    <span class="k">return</span> <span class="o">-</span><span class="n">H</span> <span class="o">@</span> <span class="p">(</span><span class="n">D</span> <span class="o">@</span> <span class="n">H</span><span class="p">)</span> <span class="o">+</span> <span class="n">J</span>
 </span></code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -1233,7 +1285,7 @@ For now, the provided functions are limited to several that are used in the rest
 
   &lt;span class=&quot;doc doc-labels&quot;&gt;
       &lt;small class=&quot;doc doc-label doc-label-module-attribute&quot;&gt;&lt;code&gt;module-attribute&lt;/code&gt;&lt;/small&gt;
-  &lt;/span&gt;" href="../types/#affinis.types.SimsMat">SimsMat</a></span><span class="p">,</span> <span class="n"><span title="affinis.proximity.forest(beta)">beta</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span>
+  &lt;/span&gt; (&lt;code&gt;affinis.types.SimsMat&lt;/code&gt;)" href="../types/#affinis.types.SimsMat">SimsMat</a></span><span class="p">,</span> <span class="n"><span title="affinis.proximity.forest(beta)">beta</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/functions.html#float">float</a></span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
@@ -1244,64 +1296,64 @@ Q = (I+ \beta L)^{-1}
 \]</div>
 <p>Gauranteed to be PD, stochastic, and strictly positive for connected graphs.
 For disconnected graphs, a q_ij=0 means no paths exist between nodes i,j.</p>
-<p>For each entry of Q, </p>
+<p>For each entry of Q,</p>
 <div class="arithmatex">\[
 q_{ij}=\frac{\varepsilon(\mathcal{F}^{ij})}{\varepsilon(\mathcal{F})}
 \]</div>
-<p>which is the fraction of spanning forests on the graph of L where i,j are 
-in the same spanning tree, rooted at i. </p>
+<p>which is the fraction of spanning forests on the graph of L where i,j are
+in the same spanning tree, rooted at i.</p>
 <p>Also called the Regularized Inverse Laplacian</p>
 
 
             <details class="mkdocstrings-source">
-              <summary>Source code in <code>affinis/proximity.py</code></summary>
-              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-5"> 5</a></span>
-<span class="normal"><a href="#__codelineno-0-6"> 6</a></span>
-<span class="normal"><a href="#__codelineno-0-7"> 7</a></span>
-<span class="normal"><a href="#__codelineno-0-8"> 8</a></span>
-<span class="normal"><a href="#__codelineno-0-9"> 9</a></span>
-<span class="normal"><a href="#__codelineno-0-10">10</a></span>
-<span class="normal"><a href="#__codelineno-0-11">11</a></span>
-<span class="normal"><a href="#__codelineno-0-12">12</a></span>
-<span class="normal"><a href="#__codelineno-0-13">13</a></span>
-<span class="normal"><a href="#__codelineno-0-14">14</a></span>
-<span class="normal"><a href="#__codelineno-0-15">15</a></span>
-<span class="normal"><a href="#__codelineno-0-16">16</a></span>
-<span class="normal"><a href="#__codelineno-0-17">17</a></span>
-<span class="normal"><a href="#__codelineno-0-18">18</a></span>
-<span class="normal"><a href="#__codelineno-0-19">19</a></span>
-<span class="normal"><a href="#__codelineno-0-20">20</a></span>
-<span class="normal"><a href="#__codelineno-0-21">21</a></span>
-<span class="normal"><a href="#__codelineno-0-22">22</a></span>
-<span class="normal"><a href="#__codelineno-0-23">23</a></span>
-<span class="normal"><a href="#__codelineno-0-24">24</a></span>
-<span class="normal"><a href="#__codelineno-0-25">25</a></span>
-<span class="normal"><a href="#__codelineno-0-26">26</a></span>
-<span class="normal"><a href="#__codelineno-0-27">27</a></span>
-<span class="normal"><a href="#__codelineno-0-28">28</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5"></a><span class="k">def</span><span class="w"> </span><span class="nf">forest</span><span class="p">(</span><span class="n">L</span><span class="p">:</span><span class="n">SimsMat</span><span class="p">,</span> <span class="n">beta</span><span class="p">:</span><span class="nb">float</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6"></a><span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;relative forest accessibilities</span>
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7"></a>
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8"></a><span class="sd">    $$</span>
-</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9"></a><span class="sd">    Q = (I+ \beta L)^{-1}</span>
-</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10"></a><span class="sd">    $$</span>
-</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11"></a>
-</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12"></a><span class="sd">    Gauranteed to be PD, stochastic, and strictly positive for connected graphs.</span>
-</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13"></a><span class="sd">    For disconnected graphs, a q_ij=0 means no paths exist between nodes i,j.</span>
-</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14"></a>
-</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15"></a><span class="sd">    For each entry of Q, </span>
-</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16"></a>
-</span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17"></a><span class="sd">    $$</span>
-</span><span id="__span-0-18"><a id="__codelineno-0-18" name="__codelineno-0-18"></a><span class="sd">    q_{ij}=\frac{\varepsilon(\mathcal{F}^{ij})}{\varepsilon(\mathcal{F})}</span>
-</span><span id="__span-0-19"><a id="__codelineno-0-19" name="__codelineno-0-19"></a><span class="sd">    $$ </span>
-</span><span id="__span-0-20"><a id="__codelineno-0-20" name="__codelineno-0-20"></a>
-</span><span id="__span-0-21"><a id="__codelineno-0-21" name="__codelineno-0-21"></a><span class="sd">    which is the fraction of spanning forests on the graph of L where i,j are </span>
-</span><span id="__span-0-22"><a id="__codelineno-0-22" name="__codelineno-0-22"></a><span class="sd">    in the same spanning tree, rooted at i. </span>
-</span><span id="__span-0-23"><a id="__codelineno-0-23" name="__codelineno-0-23"></a>
-</span><span id="__span-0-24"><a id="__codelineno-0-24" name="__codelineno-0-24"></a><span class="sd">    Also called the Regularized Inverse Laplacian&quot;&quot;&quot;</span>
-</span><span id="__span-0-25"><a id="__codelineno-0-25" name="__codelineno-0-25"></a>
-</span><span id="__span-0-26"><a id="__codelineno-0-26" name="__codelineno-0-26"></a>    <span class="c1"># return np.linalg.inv(np.eye(L))</span>
-</span><span id="__span-0-27"><a id="__codelineno-0-27" name="__codelineno-0-27"></a>
-</span><span id="__span-0-28"><a id="__codelineno-0-28" name="__codelineno-0-28"></a>    <span class="k">return</span> <span class="n">_fast_PD_inverse</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">L</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="n">beta</span> <span class="o">*</span> <span class="n">L</span><span class="p">)</span>
+              <summary>Source code in <code>src/affinis/proximity.py</code></summary>
+              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#affinis.proximity.forest--source--__codelineno-0-6"> 6</a></span>
+<span class="normal"><a href="#affinis.proximity.forest--source--__codelineno-0-7"> 7</a></span>
+<span class="normal"><a href="#affinis.proximity.forest--source--__codelineno-0-8"> 8</a></span>
+<span class="normal"><a href="#affinis.proximity.forest--source--__codelineno-0-9"> 9</a></span>
+<span class="normal"><a href="#affinis.proximity.forest--source--__codelineno-0-10">10</a></span>
+<span class="normal"><a href="#affinis.proximity.forest--source--__codelineno-0-11">11</a></span>
+<span class="normal"><a href="#affinis.proximity.forest--source--__codelineno-0-12">12</a></span>
+<span class="normal"><a href="#affinis.proximity.forest--source--__codelineno-0-13">13</a></span>
+<span class="normal"><a href="#affinis.proximity.forest--source--__codelineno-0-14">14</a></span>
+<span class="normal"><a href="#affinis.proximity.forest--source--__codelineno-0-15">15</a></span>
+<span class="normal"><a href="#affinis.proximity.forest--source--__codelineno-0-16">16</a></span>
+<span class="normal"><a href="#affinis.proximity.forest--source--__codelineno-0-17">17</a></span>
+<span class="normal"><a href="#affinis.proximity.forest--source--__codelineno-0-18">18</a></span>
+<span class="normal"><a href="#affinis.proximity.forest--source--__codelineno-0-19">19</a></span>
+<span class="normal"><a href="#affinis.proximity.forest--source--__codelineno-0-20">20</a></span>
+<span class="normal"><a href="#affinis.proximity.forest--source--__codelineno-0-21">21</a></span>
+<span class="normal"><a href="#affinis.proximity.forest--source--__codelineno-0-22">22</a></span>
+<span class="normal"><a href="#affinis.proximity.forest--source--__codelineno-0-23">23</a></span>
+<span class="normal"><a href="#affinis.proximity.forest--source--__codelineno-0-24">24</a></span>
+<span class="normal"><a href="#affinis.proximity.forest--source--__codelineno-0-25">25</a></span>
+<span class="normal"><a href="#affinis.proximity.forest--source--__codelineno-0-26">26</a></span>
+<span class="normal"><a href="#affinis.proximity.forest--source--__codelineno-0-27">27</a></span>
+<span class="normal"><a href="#affinis.proximity.forest--source--__codelineno-0-28">28</a></span>
+<span class="normal"><a href="#affinis.proximity.forest--source--__codelineno-0-29">29</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="affinis.proximity.forest--source--__span-0-6"><a id="affinis.proximity.forest--source--__codelineno-0-6" name="affinis.proximity.forest--source--__codelineno-0-6"></a><span class="k">def</span><span class="w"> </span><span class="nf">forest</span><span class="p">(</span><span class="n">L</span><span class="p">:</span> <span class="n">SimsMat</span><span class="p">,</span> <span class="n">beta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1</span><span class="p">):</span>
+</span><span id="affinis.proximity.forest--source--__span-0-7"><a id="affinis.proximity.forest--source--__codelineno-0-7" name="affinis.proximity.forest--source--__codelineno-0-7"></a><span class="w">    </span><span class="sa">r</span><span class="sd">"""relative forest accessibilities</span>
+</span><span id="affinis.proximity.forest--source--__span-0-8"><a id="affinis.proximity.forest--source--__codelineno-0-8" name="affinis.proximity.forest--source--__codelineno-0-8"></a>
+</span><span id="affinis.proximity.forest--source--__span-0-9"><a id="affinis.proximity.forest--source--__codelineno-0-9" name="affinis.proximity.forest--source--__codelineno-0-9"></a><span class="sd">    $$</span>
+</span><span id="affinis.proximity.forest--source--__span-0-10"><a id="affinis.proximity.forest--source--__codelineno-0-10" name="affinis.proximity.forest--source--__codelineno-0-10"></a><span class="sd">    Q = (I+ \beta L)^{-1}</span>
+</span><span id="affinis.proximity.forest--source--__span-0-11"><a id="affinis.proximity.forest--source--__codelineno-0-11" name="affinis.proximity.forest--source--__codelineno-0-11"></a><span class="sd">    $$</span>
+</span><span id="affinis.proximity.forest--source--__span-0-12"><a id="affinis.proximity.forest--source--__codelineno-0-12" name="affinis.proximity.forest--source--__codelineno-0-12"></a>
+</span><span id="affinis.proximity.forest--source--__span-0-13"><a id="affinis.proximity.forest--source--__codelineno-0-13" name="affinis.proximity.forest--source--__codelineno-0-13"></a><span class="sd">    Gauranteed to be PD, stochastic, and strictly positive for connected graphs.</span>
+</span><span id="affinis.proximity.forest--source--__span-0-14"><a id="affinis.proximity.forest--source--__codelineno-0-14" name="affinis.proximity.forest--source--__codelineno-0-14"></a><span class="sd">    For disconnected graphs, a q_ij=0 means no paths exist between nodes i,j.</span>
+</span><span id="affinis.proximity.forest--source--__span-0-15"><a id="affinis.proximity.forest--source--__codelineno-0-15" name="affinis.proximity.forest--source--__codelineno-0-15"></a>
+</span><span id="affinis.proximity.forest--source--__span-0-16"><a id="affinis.proximity.forest--source--__codelineno-0-16" name="affinis.proximity.forest--source--__codelineno-0-16"></a><span class="sd">    For each entry of Q,</span>
+</span><span id="affinis.proximity.forest--source--__span-0-17"><a id="affinis.proximity.forest--source--__codelineno-0-17" name="affinis.proximity.forest--source--__codelineno-0-17"></a>
+</span><span id="affinis.proximity.forest--source--__span-0-18"><a id="affinis.proximity.forest--source--__codelineno-0-18" name="affinis.proximity.forest--source--__codelineno-0-18"></a><span class="sd">    $$</span>
+</span><span id="affinis.proximity.forest--source--__span-0-19"><a id="affinis.proximity.forest--source--__codelineno-0-19" name="affinis.proximity.forest--source--__codelineno-0-19"></a><span class="sd">    q_{ij}=\frac{\varepsilon(\mathcal{F}^{ij})}{\varepsilon(\mathcal{F})}</span>
+</span><span id="affinis.proximity.forest--source--__span-0-20"><a id="affinis.proximity.forest--source--__codelineno-0-20" name="affinis.proximity.forest--source--__codelineno-0-20"></a><span class="sd">    $$</span>
+</span><span id="affinis.proximity.forest--source--__span-0-21"><a id="affinis.proximity.forest--source--__codelineno-0-21" name="affinis.proximity.forest--source--__codelineno-0-21"></a>
+</span><span id="affinis.proximity.forest--source--__span-0-22"><a id="affinis.proximity.forest--source--__codelineno-0-22" name="affinis.proximity.forest--source--__codelineno-0-22"></a><span class="sd">    which is the fraction of spanning forests on the graph of L where i,j are</span>
+</span><span id="affinis.proximity.forest--source--__span-0-23"><a id="affinis.proximity.forest--source--__codelineno-0-23" name="affinis.proximity.forest--source--__codelineno-0-23"></a><span class="sd">    in the same spanning tree, rooted at i.</span>
+</span><span id="affinis.proximity.forest--source--__span-0-24"><a id="affinis.proximity.forest--source--__codelineno-0-24" name="affinis.proximity.forest--source--__codelineno-0-24"></a>
+</span><span id="affinis.proximity.forest--source--__span-0-25"><a id="affinis.proximity.forest--source--__codelineno-0-25" name="affinis.proximity.forest--source--__codelineno-0-25"></a><span class="sd">    Also called the Regularized Inverse Laplacian"""</span>
+</span><span id="affinis.proximity.forest--source--__span-0-26"><a id="affinis.proximity.forest--source--__codelineno-0-26" name="affinis.proximity.forest--source--__codelineno-0-26"></a>
+</span><span id="affinis.proximity.forest--source--__span-0-27"><a id="affinis.proximity.forest--source--__codelineno-0-27" name="affinis.proximity.forest--source--__codelineno-0-27"></a>    <span class="c1"># return np.linalg.inv(np.eye(L))</span>
+</span><span id="affinis.proximity.forest--source--__span-0-28"><a id="affinis.proximity.forest--source--__codelineno-0-28" name="affinis.proximity.forest--source--__codelineno-0-28"></a>
+</span><span id="affinis.proximity.forest--source--__span-0-29"><a id="affinis.proximity.forest--source--__codelineno-0-29" name="affinis.proximity.forest--source--__codelineno-0-29"></a>    <span class="k">return</span> <span class="n">_fast_PD_inverse</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">L</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="n">beta</span> <span class="o">*</span> <span class="n">L</span><span class="p">)</span>
 </span></code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -1321,40 +1373,40 @@ in the same spanning tree, rooted at i. </p>
 
   &lt;span class=&quot;doc doc-labels&quot;&gt;
       &lt;small class=&quot;doc doc-label doc-label-module-attribute&quot;&gt;&lt;code&gt;module-attribute&lt;/code&gt;&lt;/small&gt;
-  &lt;/span&gt;" href="../types/#affinis.types.SimsMat">SimsMat</a></span><span class="p">,</span> <span class="n"><span title="affinis.proximity.forest_correlation(beta)">beta</span></span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+  &lt;/span&gt; (&lt;code&gt;affinis.types.SimsMat&lt;/code&gt;)" href="../types/#affinis.types.SimsMat">SimsMat</a></span><span class="p">,</span> <span class="n"><span title="affinis.proximity.forest_correlation(beta)">beta</span></span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
 
         <p>Re-scaling of forest matrix to have unit diagonal entries.</p>
-<p>If Q=q_ij gives the fraction of spanning forests where i,j share a 
-spanning tree (rooted at i), then normalizing by the relative forest 
-accessibilities q_ii is analagous to 
-- re-scaling a covariance matrix into correlations, or 
+<p>If Q=q_ij gives the fraction of spanning forests where i,j share a
+spanning tree (rooted at i), then normalizing by the relative forest
+accessibilities q_ii is analagous to
+- re-scaling a covariance matrix into correlations, or
 - rescaling a grammian into a cosine similarity.</p>
 
 
             <details class="mkdocstrings-source">
-              <summary>Source code in <code>affinis/proximity.py</code></summary>
-              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-30">30</a></span>
-<span class="normal"><a href="#__codelineno-0-31">31</a></span>
-<span class="normal"><a href="#__codelineno-0-32">32</a></span>
-<span class="normal"><a href="#__codelineno-0-33">33</a></span>
-<span class="normal"><a href="#__codelineno-0-34">34</a></span>
-<span class="normal"><a href="#__codelineno-0-35">35</a></span>
-<span class="normal"><a href="#__codelineno-0-36">36</a></span>
-<span class="normal"><a href="#__codelineno-0-37">37</a></span>
-<span class="normal"><a href="#__codelineno-0-38">38</a></span>
-<span class="normal"><a href="#__codelineno-0-39">39</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-30"><a id="__codelineno-0-30" name="__codelineno-0-30"></a><span class="k">def</span><span class="w"> </span><span class="nf">forest_correlation</span><span class="p">(</span><span class="n">L</span><span class="p">:</span><span class="n">SimsMat</span><span class="p">,</span> <span class="n">beta</span><span class="o">=</span><span class="mf">1.</span><span class="p">):</span>
-</span><span id="__span-0-31"><a id="__codelineno-0-31" name="__codelineno-0-31"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot; Re-scaling of forest matrix to have unit diagonal entries.</span>
-</span><span id="__span-0-32"><a id="__codelineno-0-32" name="__codelineno-0-32"></a>
-</span><span id="__span-0-33"><a id="__codelineno-0-33" name="__codelineno-0-33"></a><span class="sd">    If Q=q_ij gives the fraction of spanning forests where i,j share a </span>
-</span><span id="__span-0-34"><a id="__codelineno-0-34" name="__codelineno-0-34"></a><span class="sd">    spanning tree (rooted at i), then normalizing by the relative forest </span>
-</span><span id="__span-0-35"><a id="__codelineno-0-35" name="__codelineno-0-35"></a><span class="sd">    accessibilities q_ii is analagous to </span>
-</span><span id="__span-0-36"><a id="__codelineno-0-36" name="__codelineno-0-36"></a><span class="sd">    - re-scaling a covariance matrix into correlations, or </span>
-</span><span id="__span-0-37"><a id="__codelineno-0-37" name="__codelineno-0-37"></a><span class="sd">    - rescaling a grammian into a cosine similarity. </span>
-</span><span id="__span-0-38"><a id="__codelineno-0-38" name="__codelineno-0-38"></a><span class="sd">    &quot;&quot;&quot;</span>
-</span><span id="__span-0-39"><a id="__codelineno-0-39" name="__codelineno-0-39"></a>    <span class="k">return</span> <span class="n">_norm_diag</span><span class="p">(</span><span class="n">forest</span><span class="p">(</span><span class="n">L</span><span class="p">,</span><span class="n">beta</span><span class="o">=</span><span class="n">beta</span><span class="p">))</span>
+              <summary>Source code in <code>src/affinis/proximity.py</code></summary>
+              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#affinis.proximity.forest_correlation--source--__codelineno-0-32">32</a></span>
+<span class="normal"><a href="#affinis.proximity.forest_correlation--source--__codelineno-0-33">33</a></span>
+<span class="normal"><a href="#affinis.proximity.forest_correlation--source--__codelineno-0-34">34</a></span>
+<span class="normal"><a href="#affinis.proximity.forest_correlation--source--__codelineno-0-35">35</a></span>
+<span class="normal"><a href="#affinis.proximity.forest_correlation--source--__codelineno-0-36">36</a></span>
+<span class="normal"><a href="#affinis.proximity.forest_correlation--source--__codelineno-0-37">37</a></span>
+<span class="normal"><a href="#affinis.proximity.forest_correlation--source--__codelineno-0-38">38</a></span>
+<span class="normal"><a href="#affinis.proximity.forest_correlation--source--__codelineno-0-39">39</a></span>
+<span class="normal"><a href="#affinis.proximity.forest_correlation--source--__codelineno-0-40">40</a></span>
+<span class="normal"><a href="#affinis.proximity.forest_correlation--source--__codelineno-0-41">41</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="affinis.proximity.forest_correlation--source--__span-0-32"><a id="affinis.proximity.forest_correlation--source--__codelineno-0-32" name="affinis.proximity.forest_correlation--source--__codelineno-0-32"></a><span class="k">def</span><span class="w"> </span><span class="nf">forest_correlation</span><span class="p">(</span><span class="n">L</span><span class="p">:</span> <span class="n">SimsMat</span><span class="p">,</span> <span class="n">beta</span><span class="o">=</span><span class="mf">1.0</span><span class="p">):</span>
+</span><span id="affinis.proximity.forest_correlation--source--__span-0-33"><a id="affinis.proximity.forest_correlation--source--__codelineno-0-33" name="affinis.proximity.forest_correlation--source--__codelineno-0-33"></a><span class="w">    </span><span class="sd">"""Re-scaling of forest matrix to have unit diagonal entries.</span>
+</span><span id="affinis.proximity.forest_correlation--source--__span-0-34"><a id="affinis.proximity.forest_correlation--source--__codelineno-0-34" name="affinis.proximity.forest_correlation--source--__codelineno-0-34"></a>
+</span><span id="affinis.proximity.forest_correlation--source--__span-0-35"><a id="affinis.proximity.forest_correlation--source--__codelineno-0-35" name="affinis.proximity.forest_correlation--source--__codelineno-0-35"></a><span class="sd">    If Q=q_ij gives the fraction of spanning forests where i,j share a</span>
+</span><span id="affinis.proximity.forest_correlation--source--__span-0-36"><a id="affinis.proximity.forest_correlation--source--__codelineno-0-36" name="affinis.proximity.forest_correlation--source--__codelineno-0-36"></a><span class="sd">    spanning tree (rooted at i), then normalizing by the relative forest</span>
+</span><span id="affinis.proximity.forest_correlation--source--__span-0-37"><a id="affinis.proximity.forest_correlation--source--__codelineno-0-37" name="affinis.proximity.forest_correlation--source--__codelineno-0-37"></a><span class="sd">    accessibilities q_ii is analagous to</span>
+</span><span id="affinis.proximity.forest_correlation--source--__span-0-38"><a id="affinis.proximity.forest_correlation--source--__codelineno-0-38" name="affinis.proximity.forest_correlation--source--__codelineno-0-38"></a><span class="sd">    - re-scaling a covariance matrix into correlations, or</span>
+</span><span id="affinis.proximity.forest_correlation--source--__span-0-39"><a id="affinis.proximity.forest_correlation--source--__codelineno-0-39" name="affinis.proximity.forest_correlation--source--__codelineno-0-39"></a><span class="sd">    - rescaling a grammian into a cosine similarity.</span>
+</span><span id="affinis.proximity.forest_correlation--source--__span-0-40"><a id="affinis.proximity.forest_correlation--source--__codelineno-0-40" name="affinis.proximity.forest_correlation--source--__codelineno-0-40"></a><span class="sd">    """</span>
+</span><span id="affinis.proximity.forest_correlation--source--__span-0-41"><a id="affinis.proximity.forest_correlation--source--__codelineno-0-41" name="affinis.proximity.forest_correlation--source--__codelineno-0-41"></a>    <span class="k">return</span> <span class="n">_norm_diag</span><span class="p">(</span><span class="n">forest</span><span class="p">(</span><span class="n">L</span><span class="p">,</span> <span class="n">beta</span><span class="o">=</span><span class="n">beta</span><span class="p">))</span>
 </span></code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -1375,55 +1427,61 @@ accessibilities q_ii is analagous to
 
   &lt;span class=&quot;doc doc-labels&quot;&gt;
       &lt;small class=&quot;doc doc-label doc-label-module-attribute&quot;&gt;&lt;code&gt;module-attribute&lt;/code&gt;&lt;/small&gt;
-  &lt;/span&gt;" href="../types/#affinis.types.SimsMat">SimsMat</a></span><span class="p">,</span>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="n"><span title="affinis.proximity.sinkhorn(i)">i</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="n"><span title="affinis.proximity.sinkhorn(err)">err</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></span> <span class="o">=</span> <span class="mf">1e-06</span><span class="p">,</span>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="n"><span title="affinis.proximity.sinkhorn(it_max)">it_max</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span> <span class="o">=</span> <span class="mi">1000</span><span class="p">,</span>
+  &lt;/span&gt; (&lt;code&gt;affinis.types.SimsMat&lt;/code&gt;)" href="../types/#affinis.types.SimsMat">SimsMat</a></span><span class="p">,</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="n"><span title="affinis.proximity.sinkhorn(i)">i</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/functions.html#int">int</a></span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="n"><span title="affinis.proximity.sinkhorn(err)">err</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/functions.html#float">float</a></span> <span class="o">=</span> <span class="mf">1e-06</span><span class="p">,</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="n"><span title="affinis.proximity.sinkhorn(it_max)">it_max</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/functions.html#int">int</a></span> <span class="o">=</span> <span class="mi">500</span><span class="p">,</span>
 </span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="p">)</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
 
-        <p>Make matrix A doubly-stochastic (rows/cols sum to 1), if possible. </p>
-<p>Uses sinkhorn-knop (iterated proportional fitting) to project an n x n matrix A 
+        <p>Make matrix A doubly-stochastic (rows/cols sum to 1), if possible.</p>
+<p>Uses sinkhorn-knop (iterated proportional fitting) to project an n x n matrix A
 onto the closest point in the Birkhoff polytope.</p>
 
 
             <details class="mkdocstrings-source">
-              <summary>Source code in <code>affinis/proximity.py</code></summary>
-              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-41">41</a></span>
-<span class="normal"><a href="#__codelineno-0-42">42</a></span>
-<span class="normal"><a href="#__codelineno-0-43">43</a></span>
-<span class="normal"><a href="#__codelineno-0-44">44</a></span>
-<span class="normal"><a href="#__codelineno-0-45">45</a></span>
-<span class="normal"><a href="#__codelineno-0-46">46</a></span>
-<span class="normal"><a href="#__codelineno-0-47">47</a></span>
-<span class="normal"><a href="#__codelineno-0-48">48</a></span>
-<span class="normal"><a href="#__codelineno-0-49">49</a></span>
-<span class="normal"><a href="#__codelineno-0-50">50</a></span>
-<span class="normal"><a href="#__codelineno-0-51">51</a></span>
-<span class="normal"><a href="#__codelineno-0-52">52</a></span>
-<span class="normal"><a href="#__codelineno-0-53">53</a></span>
-<span class="normal"><a href="#__codelineno-0-54">54</a></span>
-<span class="normal"><a href="#__codelineno-0-55">55</a></span>
-<span class="normal"><a href="#__codelineno-0-56">56</a></span>
-<span class="normal"><a href="#__codelineno-0-57">57</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-41"><a id="__codelineno-0-41" name="__codelineno-0-41"></a><span class="k">def</span><span class="w"> </span><span class="nf">sinkhorn</span><span class="p">(</span><span class="n">A</span><span class="p">:</span><span class="n">SimsMat</span><span class="p">,</span> <span class="n">i</span><span class="p">:</span><span class="nb">int</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">err</span><span class="p">:</span><span class="nb">float</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">,</span> <span class="n">it_max</span><span class="p">:</span><span class="nb">int</span><span class="o">=</span><span class="mi">1000</span><span class="p">):</span>
-</span><span id="__span-0-42"><a id="__codelineno-0-42" name="__codelineno-0-42"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot; Make matrix A doubly-stochastic (rows/cols sum to 1), if possible. </span>
-</span><span id="__span-0-43"><a id="__codelineno-0-43" name="__codelineno-0-43"></a>
-</span><span id="__span-0-44"><a id="__codelineno-0-44" name="__codelineno-0-44"></a><span class="sd">    Uses sinkhorn-knop (iterated proportional fitting) to project an n x n matrix A </span>
-</span><span id="__span-0-45"><a id="__codelineno-0-45" name="__codelineno-0-45"></a><span class="sd">    onto the closest point in the Birkhoff polytope.  </span>
-</span><span id="__span-0-46"><a id="__codelineno-0-46" name="__codelineno-0-46"></a>
-</span><span id="__span-0-47"><a id="__codelineno-0-47" name="__codelineno-0-47"></a><span class="sd">    &quot;&quot;&quot;</span>
-</span><span id="__span-0-48"><a id="__codelineno-0-48" name="__codelineno-0-48"></a>    <span class="n">marg_sum</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-</span><span id="__span-0-49"><a id="__codelineno-0-49" name="__codelineno-0-49"></a>    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">marg_sum</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">err</span><span class="p">:</span>
-</span><span id="__span-0-50"><a id="__codelineno-0-50" name="__codelineno-0-50"></a>        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">A</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
-</span><span id="__span-0-51"><a id="__codelineno-0-51" name="__codelineno-0-51"></a>    <span class="k">elif</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="n">it_max</span><span class="p">:</span>
-</span><span id="__span-0-52"><a id="__codelineno-0-52" name="__codelineno-0-52"></a>        <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
-</span><span id="__span-0-53"><a id="__codelineno-0-53" name="__codelineno-0-53"></a>
-</span><span id="__span-0-54"><a id="__codelineno-0-54" name="__codelineno-0-54"></a>        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;sinkhorn iterations did not converge...&quot;</span><span class="p">,</span> <span class="ne">RuntimeWarning</span><span class="p">)</span>
-</span><span id="__span-0-55"><a id="__codelineno-0-55" name="__codelineno-0-55"></a>        <span class="k">return</span> <span class="n">A</span>
-</span><span id="__span-0-56"><a id="__codelineno-0-56" name="__codelineno-0-56"></a>    <span class="k">else</span><span class="p">:</span>
-</span><span id="__span-0-57"><a id="__codelineno-0-57" name="__codelineno-0-57"></a>        <span class="k">return</span> <span class="n">sinkhorn</span><span class="p">((</span><span class="n">A</span> <span class="o">/</span> <span class="n">marg_sum</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">i</span><span class="o">=</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+              <summary>Source code in <code>src/affinis/proximity.py</code></summary>
+              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#affinis.proximity.sinkhorn--source--__codelineno-0-44">44</a></span>
+<span class="normal"><a href="#affinis.proximity.sinkhorn--source--__codelineno-0-45">45</a></span>
+<span class="normal"><a href="#affinis.proximity.sinkhorn--source--__codelineno-0-46">46</a></span>
+<span class="normal"><a href="#affinis.proximity.sinkhorn--source--__codelineno-0-47">47</a></span>
+<span class="normal"><a href="#affinis.proximity.sinkhorn--source--__codelineno-0-48">48</a></span>
+<span class="normal"><a href="#affinis.proximity.sinkhorn--source--__codelineno-0-49">49</a></span>
+<span class="normal"><a href="#affinis.proximity.sinkhorn--source--__codelineno-0-50">50</a></span>
+<span class="normal"><a href="#affinis.proximity.sinkhorn--source--__codelineno-0-51">51</a></span>
+<span class="normal"><a href="#affinis.proximity.sinkhorn--source--__codelineno-0-52">52</a></span>
+<span class="normal"><a href="#affinis.proximity.sinkhorn--source--__codelineno-0-53">53</a></span>
+<span class="normal"><a href="#affinis.proximity.sinkhorn--source--__codelineno-0-54">54</a></span>
+<span class="normal"><a href="#affinis.proximity.sinkhorn--source--__codelineno-0-55">55</a></span>
+<span class="normal"><a href="#affinis.proximity.sinkhorn--source--__codelineno-0-56">56</a></span>
+<span class="normal"><a href="#affinis.proximity.sinkhorn--source--__codelineno-0-57">57</a></span>
+<span class="normal"><a href="#affinis.proximity.sinkhorn--source--__codelineno-0-58">58</a></span>
+<span class="normal"><a href="#affinis.proximity.sinkhorn--source--__codelineno-0-59">59</a></span>
+<span class="normal"><a href="#affinis.proximity.sinkhorn--source--__codelineno-0-60">60</a></span>
+<span class="normal"><a href="#affinis.proximity.sinkhorn--source--__codelineno-0-61">61</a></span>
+<span class="normal"><a href="#affinis.proximity.sinkhorn--source--__codelineno-0-62">62</a></span>
+<span class="normal"><a href="#affinis.proximity.sinkhorn--source--__codelineno-0-63">63</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="affinis.proximity.sinkhorn--source--__span-0-44"><a id="affinis.proximity.sinkhorn--source--__codelineno-0-44" name="affinis.proximity.sinkhorn--source--__codelineno-0-44"></a><span class="k">def</span><span class="w"> </span><span class="nf">sinkhorn</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">SimsMat</span><span class="p">,</span> <span class="n">i</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">err</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-6</span><span class="p">,</span> <span class="n">it_max</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">500</span><span class="p">):</span>
+</span><span id="affinis.proximity.sinkhorn--source--__span-0-45"><a id="affinis.proximity.sinkhorn--source--__codelineno-0-45" name="affinis.proximity.sinkhorn--source--__codelineno-0-45"></a><span class="w">    </span><span class="sd">"""Make matrix A doubly-stochastic (rows/cols sum to 1), if possible.</span>
+</span><span id="affinis.proximity.sinkhorn--source--__span-0-46"><a id="affinis.proximity.sinkhorn--source--__codelineno-0-46" name="affinis.proximity.sinkhorn--source--__codelineno-0-46"></a>
+</span><span id="affinis.proximity.sinkhorn--source--__span-0-47"><a id="affinis.proximity.sinkhorn--source--__codelineno-0-47" name="affinis.proximity.sinkhorn--source--__codelineno-0-47"></a><span class="sd">    Uses sinkhorn-knop (iterated proportional fitting) to project an n x n matrix A</span>
+</span><span id="affinis.proximity.sinkhorn--source--__span-0-48"><a id="affinis.proximity.sinkhorn--source--__codelineno-0-48" name="affinis.proximity.sinkhorn--source--__codelineno-0-48"></a><span class="sd">    onto the closest point in the Birkhoff polytope.</span>
+</span><span id="affinis.proximity.sinkhorn--source--__span-0-49"><a id="affinis.proximity.sinkhorn--source--__codelineno-0-49" name="affinis.proximity.sinkhorn--source--__codelineno-0-49"></a>
+</span><span id="affinis.proximity.sinkhorn--source--__span-0-50"><a id="affinis.proximity.sinkhorn--source--__codelineno-0-50" name="affinis.proximity.sinkhorn--source--__codelineno-0-50"></a><span class="sd">    """</span>
+</span><span id="affinis.proximity.sinkhorn--source--__span-0-51"><a id="affinis.proximity.sinkhorn--source--__codelineno-0-51" name="affinis.proximity.sinkhorn--source--__codelineno-0-51"></a>    <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;=</span><span class="n">it_max</span><span class="p">:</span>
+</span><span id="affinis.proximity.sinkhorn--source--__span-0-52"><a id="affinis.proximity.sinkhorn--source--__codelineno-0-52" name="affinis.proximity.sinkhorn--source--__codelineno-0-52"></a>        <span class="n">marginals</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+</span><span id="affinis.proximity.sinkhorn--source--__span-0-53"><a id="affinis.proximity.sinkhorn--source--__codelineno-0-53" name="affinis.proximity.sinkhorn--source--__codelineno-0-53"></a>        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">marginals</span><span class="o">.</span><span class="n">data</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">err</span><span class="p">:</span>
+</span><span id="affinis.proximity.sinkhorn--source--__span-0-54"><a id="affinis.proximity.sinkhorn--source--__codelineno-0-54" name="affinis.proximity.sinkhorn--source--__codelineno-0-54"></a>            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">A</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+</span><span id="affinis.proximity.sinkhorn--source--__span-0-55"><a id="affinis.proximity.sinkhorn--source--__codelineno-0-55" name="affinis.proximity.sinkhorn--source--__codelineno-0-55"></a>        <span class="k">else</span><span class="p">:</span>
+</span><span id="affinis.proximity.sinkhorn--source--__span-0-56"><a id="affinis.proximity.sinkhorn--source--__codelineno-0-56" name="affinis.proximity.sinkhorn--source--__codelineno-0-56"></a>            <span class="n">marginals</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="mi">1</span><span class="o">/</span><span class="n">marginals</span><span class="o">.</span><span class="n">data</span>
+</span><span id="affinis.proximity.sinkhorn--source--__span-0-57"><a id="affinis.proximity.sinkhorn--source--__codelineno-0-57" name="affinis.proximity.sinkhorn--source--__codelineno-0-57"></a>            <span class="n">A</span> <span class="o">=</span> <span class="p">(</span><span class="n">A</span><span class="o">*</span><span class="n">marginals</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+</span><span id="affinis.proximity.sinkhorn--source--__span-0-58"><a id="affinis.proximity.sinkhorn--source--__codelineno-0-58" name="affinis.proximity.sinkhorn--source--__codelineno-0-58"></a>            <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+</span><span id="affinis.proximity.sinkhorn--source--__span-0-59"><a id="affinis.proximity.sinkhorn--source--__codelineno-0-59" name="affinis.proximity.sinkhorn--source--__codelineno-0-59"></a>            <span class="c1"># return sinkhorn((A / marg_sum).T, i=i + 1)</span>
+</span><span id="affinis.proximity.sinkhorn--source--__span-0-60"><a id="affinis.proximity.sinkhorn--source--__codelineno-0-60" name="affinis.proximity.sinkhorn--source--__codelineno-0-60"></a>
+</span><span id="affinis.proximity.sinkhorn--source--__span-0-61"><a id="affinis.proximity.sinkhorn--source--__codelineno-0-61" name="affinis.proximity.sinkhorn--source--__codelineno-0-61"></a>    <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+</span><span id="affinis.proximity.sinkhorn--source--__span-0-62"><a id="affinis.proximity.sinkhorn--source--__codelineno-0-62" name="affinis.proximity.sinkhorn--source--__codelineno-0-62"></a>    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">"sinkhorn iterations did not converge..."</span><span class="p">,</span> <span class="ne">RuntimeWarning</span><span class="p">)</span>
+</span><span id="affinis.proximity.sinkhorn--source--__span-0-63"><a id="affinis.proximity.sinkhorn--source--__codelineno-0-63" name="affinis.proximity.sinkhorn--source--__codelineno-0-63"></a>    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">A</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
 </span></code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -1493,13 +1551,13 @@ onto the closest point in the Birkhoff polytope.</p>
         
         
           
-          <a href="../distance/" class="md-footer__link md-footer__link--next" aria-label="Next: &lt;code class=&quot;doc-symbol doc-symbol-toc doc-symbol-module&quot;&gt;&lt;&#x2f;code&gt;&amp;nbsp;distance">
+          <a href="../types/" class="md-footer__link md-footer__link--next" aria-label="Next: &lt;code class=&quot;doc-symbol doc-symbol-toc doc-symbol-module&quot;&gt;&lt;&#x2f;code&gt;&amp;nbsp;types">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                <code class="doc-symbol doc-symbol-toc doc-symbol-module"></code>&nbsp;distance
+                <code class="doc-symbol doc-symbol-toc doc-symbol-module"></code>&nbsp;types
               </div>
             </div>
             <div class="md-footer__button md-icon">
@@ -1536,7 +1594,7 @@ onto the closest point in the Birkhoff polytope.</p>
     
     
     <a href="https://github.com/usnistgov/affinis" target="_blank" rel="noopener" title="USNISTGOV on GitHub" class="md-social__link">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path fill="currentColor" d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.3.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2026 Fonticons, Inc.--><path fill="currentColor" d="M216.5 362.5c-66-8-112.5-55.5-112.5-117 0-25 9-52 24-70-6.5-16.5-5.5-51.5 2-66 20-2.5 47 8 63 22.5 19-6 39-9 63.5-9s44.5 3 62.5 8.5c15.5-14 43-24.5 63-22 7 13.5 8 48.5 1.5 65.5 16 19 24.5 44.5 24.5 70.5 0 61.5-46.5 108-113.5 116.5 17 11 28.5 35 28.5 62.5v52c0 15 12.5 23.5 27.5 17.5C441 459.5 512 369 512 257 512 115.5 397 0 255.5 0S0 115.5 0 257c0 111 70.5 203 165.5 237.5 13.5 5 26.5-4 26.5-17.5v-40c-7 3-16 5-24 5-33 0-52.5-18-66.5-51.5-5.5-13.5-11.5-21.5-23-23-6-.5-8-3-8-6 0-6 10-10.5 20-10.5 14.5 0 27 9 40 27.5 10 14.5 20.5 21 33 21s20.5-4.5 32-16c8.5-8.5 15-16 21-21"/></svg>
     </a>
   
 </div>
@@ -1546,7 +1604,7 @@ onto the closest point in the Birkhoff polytope.</p>
 </footer>
       
     </div>
-    <div class="md-dialog" data-md-component="dialog">
+    <div class="md-dialog" data-md-component="dialog" role="status" aria-atomic="true">
       <div class="md-dialog__inner md-typeset"></div>
     </div>
     
@@ -1555,10 +1613,13 @@ onto the closest point in the Birkhoff polytope.</p>
       
       
       
-      <script id="__config" type="application/json">{"annotate":null,"base":"../..","features":["announce.dismiss","content.code.annotate","content.code.copy","content.code.select","content.footnote.tooltips","content.tabs.link","content.tooltips","navigation.footer","navigation.indexes","navigation.instant","navigation.instant.prefetch","navigation.path","navigation.sections","navigation.top","navigation.tracking","search.highlight"],"search":"../../assets/javascripts/workers/search.e2d2d235.min.js","tags":null,"translations":{"clipboard.copied":"Copied to clipboard","clipboard.copy":"Copy to clipboard","search.result.more.one":"1 more on this page","search.result.more.other":"# more on this page","search.result.none":"No matching documents","search.result.one":"1 matching document","search.result.other":"# matching documents","search.result.placeholder":"Type to start searching","search.result.term.missing":"Missing","select.version":"Select version"},"version":null}</script>
+      
+        
+        
+      <script id="__config" type="application/json">{"annotate":null,"base":"../..","features":["announce.dismiss","content.code.annotate","content.code.copy","content.code.select","content.footnote.tooltips","content.tabs.link","content.tooltips","navigation.footer","navigation.indexes","navigation.instant","navigation.instant.prefetch","navigation.path","navigation.sections","navigation.top","navigation.tracking","search.highlight"],"redirect":null,"search":"../../assets/javascripts/workers/search.c47bb847.min.js","tags":null,"translations":{"clipboard.copied":"Copied to clipboard","clipboard.copy":"Copy to clipboard","clipboard.error":"Could not copy to clipboard","search.result.more.one":"1 more on this page","search.result.more.other":"# more on this page","search.result.none":"No matching documents","search.result.one":"1 matching document","search.result.other":"# matching documents","search.result.placeholder":"Type to start searching","search.result.term.missing":"Missing","select.version":"Select version"},"version":null}</script>
     
     
-      <script src="../../assets/javascripts/bundle.36a64b72.min.js"></script>
+      <script src="../../assets/javascripts/bundle.77dd0ce9.min.js"></script>
       
         <script src="../../javascripts/mathjax.js"></script>
       
