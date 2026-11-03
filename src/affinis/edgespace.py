@@ -10,6 +10,12 @@ from .types import FeatMat
 Idx: TypeAlias = Int[np.ndarray, "*elems"]
 
 
+__all__ = [
+    'sq2flat',
+    'flat2sq',
+    'binary_feature_edge_cliques',
+]
+
 def sq_e_ij(n: int, e: Idx) -> tuple[Idx, Idx]:
     """Closed-form expression to map edge-to-node-pair indices.
 
@@ -49,7 +55,7 @@ def sq_ij_e(n: int, ij: tuple[Idx, Idx]) -> Idx:
 
 
 @dispatch(precedence=1)
-def sq2flat(A: Shaped[np.ndarray, "n n"]) -> Shaped[np.ndarray, "e"]:
+def sq2flat(A: Shaped[np.ndarray, "n n"]) -> Shaped[np.ndarray, "e"]:  #type:ignore
     """could just use `squareform`..."""
     n = min(A.shape[-1], A.shape[-2])
     return A[np.triu_indices(n, k=1)]
@@ -74,8 +80,29 @@ def sq2flat(A: Shaped[COO, "*batch n n"]) -> Shaped[COO, "*batch e"]: #type:igno
     # return COO(shape=shape, coords=coords, data=a.data)
 
 @dispatch
-def sq2flat(A:sparray):
+def sq2flat(A:sparray):  #type:ignore
     return sq2flat(COO.from_scipy_sparse(A))
+
+
+@dispatch.abstract
+def sq2flat(  # type:ignore
+    A: Shaped[COO|sparray|np.ndarray, "*batch n n"]
+) -> Shaped[COO|sparray|np.ndarray, "*batch e"]: 
+    """Transform square (symmetric/triu) array(s) into cannonical 1d edge array(s).
+
+    Preserves sparsity using triangular number identities
+    (each m,n pair has a unique linear index).
+
+    Currently dispatches for numpy.ndarray, scipy sparse, and pydata's `sparse.COO`.
+
+    Args:
+        A: Square array to unroll
+
+    Returns:
+        flattened array of upper-triangle values
+    """
+    ...
+
 
 @dispatch(precedence=1)
 def flat2sq(e: Shaped[np.ndarray, "e"]) -> Shaped[np.ndarray, "n n"]:
@@ -94,6 +121,24 @@ def flat2sq(e: Shaped[COO, "e"]) -> Shaped[COO, "n n"]: # type:ignore
     return tri + tri.T
 
 
+@dispatch.abstract
+def flat2sq(  #type:ignore
+    A: Shaped[COO|sparray|np.ndarray, "e"]
+) -> Shaped[COO|sparray|np.ndarray, "n n"]: 
+    """ Transform flat array of edge values to a square/symmetric "adjacency" representation
+
+    Preserves sparsity using triangular number identities
+    (each edge index corresponds to a unique (m,n) pair of indices).
+
+    Args:
+        e: flat array (triangular-number-sized)
+
+    Returns:
+        Square, symmetric array 
+    """
+    ...
+
+    
 def csr_rows_idx(matrix):
     """Return column indices for data in matrix, per row (empty array if none)"""
     rows = matrix.shape[0]

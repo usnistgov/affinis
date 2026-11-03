@@ -426,7 +426,7 @@ def doubly_stochastic_filter(
 
     This implementation is effectively a wrappper around
     [sinkhorn][affinis.proximity.sinkhorn] and
-    [min_connected_filter][affinis.filter.min_connected_filter] to
+    [threshold_connected][affinis.filter.threshold_connected] to
     accomplish the "two stage" process used.
 
     Args:

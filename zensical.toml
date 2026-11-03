@@ -22,12 +22,12 @@ nav = [
   {"Examples" = ["case-studies/example.md"]},
   { "API" = [
         'api/associations.md',
+        'api/distance.md',
+        'api/edgespace.md',
+        'api/filters.md',
         'api/plots.md',
         'api/priors.md',
         'api/proximity.md',
-        'api/distance.md',
-        'api/filters.md',
-        'api/edgespace.md',
         'api/types.md',
         
   ]},
@@ -122,7 +122,7 @@ custom_fences = [
 ### mkdocstrings
 [project.plugins.mkdocstrings.handlers.python]
 inventories = ["https://docs.python.org/3/objects.inv"]
-paths = ["affinis/"]
+paths = ["src"]
 [project.plugins.mkdocstrings.handlers.python.options]
 docstring_style = "google"
 inherited_members = true
@@ -133,6 +133,7 @@ docstring_section_style = "list"
 # extensions = ["griffe_typingdoc",]
 filters = ["!^_", "^__"]
 heading_level = 1
+# member_order = ["__all__"]
 # merge_init_into_class = true
 parameter_headings = true
 separate_signature = true
